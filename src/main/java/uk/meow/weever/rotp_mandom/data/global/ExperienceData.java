@@ -1,12 +1,13 @@
 package uk.meow.weever.rotp_mandom.data.global;
 
-@Deprecated
 public class ExperienceData {
-    public final float level;
+    public final int level;
     public final float points;
+    public final int total;
 
-    public ExperienceData(float level, float points) {
+    public ExperienceData(int level, float points, int total) {
         this.level = level;
         this.points = points;
+        this.total = total;
     }
 }

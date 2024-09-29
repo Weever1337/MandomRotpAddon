@@ -89,17 +89,24 @@ public class RewindSystem {
     }
 
     private static void rewindLivingEntityData(Queue<LivingEntityData> livingEntityData, Entity entity, List<Entity> entities) {
+        AtomicBoolean foundInWorld = new AtomicBoolean(false);
         livingEntityData.forEach(data -> {
             if (!data.restored && data.entity == entity) {
-                data.entity.deathTime = 0;
-                AddonPackets.sendToClientsTrackingAndSelf(new TrResetDeathTimePacket(data.entity.getId()), data.entity);
+                foundInWorld.set(true);
                 if (entities.contains(data.entity)) {
                     LivingEntityData.rewindLivingEntityData(data);
-                } else {
-                    LivingEntityData.rewindDeadLivingEntityData(data, entity.level);
                 }
             }
         });
+        if (!foundInWorld.get()) {
+            if (inLivingEntityData(livingEntityData, (LivingEntity) entity)) {
+                livingEntityData.forEach(data -> {
+                    if (!data.restored && entities.contains(data.entity)) {
+                        LivingEntityData.rewindDeadLivingEntityData(data, entity.level); // FIXME works only with PlayerEntity, but minecraft cant create PlayerEntity 💀
+                    }
+                });
+            }
+        }
     }
 
     private static void rewindProjectileData(Queue<ProjectileData> projectileData, Entity entity, List<Entity> entities) {
@@ -119,7 +126,7 @@ public class RewindSystem {
             } else {
                 projectileData.forEach(data -> {
                     if (!data.restored && entities.contains(entity)) {
-                        ProjectileData.rewindDeadProjectileEntityData(data, entity.level);
+                        ProjectileData.rewindDeadProjectileEntityData(data, entity.level); // FIXME works only with PlayerEntity, but minecraft cant create PlayerEntity 💀
                         data.restored = true;
                     }
                 });
@@ -150,6 +157,16 @@ public class RewindSystem {
                 });
             }
         }
+    }
+
+    public static boolean inLivingEntityData(Queue<LivingEntityData> livingEntityData, LivingEntity entity) {
+        AtomicBoolean inData = new AtomicBoolean(false);
+        livingEntityData.forEach(data -> {
+            if (data.entity == entity) {
+                inData.set(true);
+            }
+        });
+        return inData.get();
     }
 
     public static boolean inItemData(Queue<ItemData> itemData, ItemEntity entity) {
