@@ -1,0 +1,11 @@
+{
+  "entity.rotp_mandom.mandom": "男人领域",
+  "stand.rotp_mandom.mandom": "男人领域",
+
+  "action.rotp_mandom.time_rewind": "时间回溯",
+  "action.rotp_mandom.time_rewind.sec": "时间将在%s秒后回溯",
+
+  "tooltip.rotp_mandom.ringo_clock": "%s秒，不多也不少，刚刚好%s秒",
+  "item.rotp_mandom.ringo_clock.reference_quote": "这就是，男子汉的世界",
+  "item.rotp_mandom.ringo_clock": "林可的手表"
+}

@@ -1,0 +1,84 @@
+package uk.meow.weever.rotp_mandom.entity;
+
+import com.github.standobyte.jojo.action.ActionTarget;
+import com.github.standobyte.jojo.capability.world.TimeStopHandler;
+import com.github.standobyte.jojo.entity.stand.StandEntity;
+import com.github.standobyte.jojo.entity.stand.StandEntityType;
+import com.github.standobyte.jojo.entity.stand.StandRelativeOffset;
+import com.github.standobyte.jojo.init.power.stand.ModStandsInit;
+import com.github.standobyte.jojo.network.PacketManager;
+import com.github.standobyte.jojo.network.packets.fromclient.ClClickActionPacket;
+import com.github.standobyte.jojo.util.mod.JojoModUtil;
+import uk.meow.weever.rotp_mandom.config.TPARConfig;
+import uk.meow.weever.rotp_mandom.init.InitStands;
+import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.World;
+
+public class MandomEntity extends StandEntity {
+    private static int SEC = -1;
+    private static int ticks = 0;
+    private final StandRelativeOffset offsetDefault = StandRelativeOffset.withYOffset(0, 0, 0);
+
+    public MandomEntity(StandEntityType<MandomEntity> type, World world) {
+        super(type, world);
+        unsummonOffset = getDefaultOffsetFromUser().copy();
+    }
+
+    public static int getSEC() {
+        return SEC;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        LivingEntity user = getUser();
+
+        if (!(user instanceof PlayerEntity)) {
+            return;
+        }
+
+        if (CapabilityUtil.dataIsEmptyOrNot((PlayerEntity) user)) {
+            SEC = -1;
+            ticks = 0;
+            return;
+        }
+
+        RayTraceResult rayTrace = JojoModUtil.rayTrace(user.getEyePosition(1.0F), user.getLookAngle(), 3,
+                level, user, e -> !(e.is(this) || e.is(user)), 0, 0);
+        ActionTarget target = ActionTarget.fromRayTraceResult(rayTrace);
+        target.resolveEntityId(level);
+
+        if (this.getCurrentTaskAction() == ModStandsInit.UNSUMMON_STAND_ENTITY.get()) {
+            SEC = -1;
+            ticks = 0;
+            CapabilityUtil.removeRewindData((PlayerEntity) user);
+            return;
+        }
+
+        if (!TimeStopHandler.isTimeStopped(level, user.blockPosition()) && user.level.isClientSide()) {
+            ticks++;
+            if (SEC == -1) {
+                SEC = TPARConfig.getSecond(level.isClientSide());
+            } else if (ticks % 20 == 0) {
+                SEC--;
+
+                if (SEC == 0) {
+                    SEC = -1;
+                    ticks = 0;
+                    ClClickActionPacket packet = new ClClickActionPacket(
+                            getUserPower().getPowerClassification(), InitStands.REWIND_TIPO.get(), target, false
+                    );
+                    PacketManager.sendToServer(packet);
+                }
+            }
+        }
+    }
+
+    public StandRelativeOffset getDefaultOffsetFromUser() {
+        return offsetDefault;
+    }
+}

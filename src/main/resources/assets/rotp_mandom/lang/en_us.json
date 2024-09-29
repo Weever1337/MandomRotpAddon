@@ -1,0 +1,11 @@
+{
+  "entity.rotp_mandom.mandom": "Mandom",
+  "stand.rotp_mandom.mandom": "Mandom",
+
+  "action.rotp_mandom.time_rewind": "Time Rewind",
+  "action.rotp_mandom.time_rewind.sec": "Time Rewind | Seconds: %s",
+
+  "tooltip.rotp_mandom.ringo_clock": "Only %s seconds. Not a second more, not a second less. For precisely %s seconds.",
+  "item.rotp_mandom.ringo_clock.reference_quote": "This is the world of man.",
+  "item.rotp_mandom.ringo_clock": "Ringo Clock"
+}

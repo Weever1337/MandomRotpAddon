@@ -1,0 +1,11 @@
+{
+  "entity.rotp_mandom.mandom": "Mandom",
+  "stand.rotp_mandom.mandom": "Mandom",
+
+  "action.rotp_mandom.time_rewind": "Отмотка Времени",
+  "action.rotp_mandom.time_rewind.sec": "Отмотка Времени | Секунд: %s",
+
+  "tooltip.rotp_mandom.ringo_clock": "Только %s секунд. Ни секундой больше, ни секундой меньше. Ровно %s секунд.",
+  "item.rotp_mandom.ringo_clock.reference_quote": "Мир настоящих мужчин.",
+  "item.rotp_mandom.ringo_clock": "Часы Ринго"
+}

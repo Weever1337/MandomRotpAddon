@@ -1,0 +1,11 @@
+{
+  "summon": {
+    "sounds": [ "rotp_mandom:summon", "rotp_mandom:summon2" ]
+  },
+  "rewind": {
+    "sounds": [ "rotp_mandom:rewind" ]
+  },
+  "void": {
+    "sounds": [ "rotp_mandom:void" ]
+  }
+}
