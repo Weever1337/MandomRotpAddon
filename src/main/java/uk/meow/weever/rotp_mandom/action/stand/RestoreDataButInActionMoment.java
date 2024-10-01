@@ -8,15 +8,18 @@ import com.github.standobyte.jojo.capability.world.TimeStopInstance;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
 import uk.meow.weever.rotp_mandom.config.TPARConfig;
+import uk.meow.weever.rotp_mandom.init.InitSounds;
 import uk.meow.weever.rotp_mandom.init.InitStands;
 import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
 import javax.annotation.Nullable;
@@ -34,6 +37,7 @@ public class RestoreDataButInActionMoment extends TimeStop {
     @Override
     protected void perform(World world, LivingEntity user, IStandPower power, ActionTarget target) {
         if (!world.isClientSide()) {
+            world.playSound(null,user.blockPosition(), InitSounds.REWIND.get(), SoundCategory.PLAYERS,1,1);
             int timeStopTicks = 12;
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide());
             BlockPos blockPos = user.blockPosition();
@@ -42,7 +46,13 @@ public class RestoreDataButInActionMoment extends TimeStop {
             TimeStopHandler.stopTime(world, instance);
             RewindSystem.rewindData((PlayerEntity) user, RANGE * 16);
             RewindSystem.getRingoClock(user, true);
-            power.setCooldownTimer(InitStands.TIME_REWIND.get(), TPARConfig.getSecond(world.isClientSide()) * 20);
+            if (TPARConfig.getCooldownForRewind(world.isClientSide())) {
+                if (TPARConfig.getCooldownSystem(world.isClientSide()) == uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem.OWN) {
+                    power.setCooldownTimer(InitStands.TIME_REWIND.get(), TPARConfig.getCooldownOwnTime(world.isClientSide()) * 20);
+                } else {
+                    power.setCooldownTimer(InitStands.TIME_REWIND.get(), TPARConfig.getSecond(world.isClientSide()) * 20);
+                }
+            }
         }
     }
 

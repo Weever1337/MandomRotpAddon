@@ -15,9 +15,6 @@ import uk.meow.weever.rotp_mandom.data.world.*;
 import uk.meow.weever.rotp_mandom.config.*;
 import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
-import uk.meow.weever.rotp_mandom.network.AddonPackets;
-import uk.meow.weever.rotp_mandom.network.server.TrResetDeathTimePacket;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,25 +32,24 @@ public class RewindSystem {
             }
             if (TPARConfig.getSaveEntities(player.level.isClientSide())) {
                 List<LivingEntity> livingEntities = new ArrayList<>();
-                livingEntities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, null));
-                livingEntities.removeIf(entity -> entity instanceof ArmorStandEntity);
+                livingEntities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, entity -> (!(entity instanceof ArmorStandEntity))));
                 livingEntities.add(player);
                 livingEntities.forEach(entity -> {
-                    livingEntitiesData.add(LivingEntityData.saveLivingEntityData((LivingEntity) entity));
+                    livingEntitiesData.add(LivingEntityData.saveLivingEntityData(entity));
                 });
             }
             if (TPARConfig.getSaveItems(player.level.isClientSide())) {
                 List<ItemEntity> items = new ArrayList<>();
                 items.addAll(MCUtil.entitiesAround(ItemEntity.class, player, range, false, null));
                 items.forEach(entity -> {
-                    itemsData.add(ItemData.saveItemData((ItemEntity) entity));
+                    itemsData.add(ItemData.saveItemData(entity));
                 });
             }
             if (TPARConfig.getSaveProjectiles(player.level.isClientSide())) {
                 List<ProjectileEntity> projectiles = new ArrayList<>();
                 projectiles.addAll(MCUtil.entitiesAround(ProjectileEntity.class, player, range, false, null));
                 projectiles.forEach(entity -> {
-                    projectilesData.add(ProjectileData.saveProjectileData((ProjectileEntity) entity));
+                    projectilesData.add(ProjectileData.saveProjectileData(entity));
                 });
             }
             CapabilityUtil.saveRewindData(player, livingEntitiesData, projectilesData, itemsData, worldData);
@@ -66,17 +62,17 @@ public class RewindSystem {
             Queue<ProjectileData> projectileData = CapabilityUtil.getProjectileData(player);
             Queue<ItemData> itemData = CapabilityUtil.getItemData(player);
             List<Entity> entities = new ArrayList<>();
-            entities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, null));
-            entities.addAll(MCUtil.entitiesAround(ItemEntity.class, player, range, false, null));
-            entities.addAll(MCUtil.entitiesAround(ProjectileEntity.class, player, range, false, null));
-            entities.addAll(MCUtil.entitiesAround(Entity.class, player, range, false, null));
+            entities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, filter -> livingEntityData != null && !(filter instanceof ArmorStandEntity)));
+            entities.addAll(MCUtil.entitiesAround(ItemEntity.class, player, range, false, filter -> itemData != null));
+            entities.addAll(MCUtil.entitiesAround(ProjectileEntity.class, player, range, false, filter -> projectileData != null));
+            entities.addAll(MCUtil.entitiesAround(Entity.class, player, range, false, filter -> !(filter instanceof ArmorStandEntity)));
             entities.add(player);
             entities.forEach(entity -> {
-                if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity) && livingEntityData != null) {
+                if (entity instanceof LivingEntity) {
                     rewindLivingEntityData(livingEntityData, entity, entities);
-                } else if (entity instanceof ProjectileEntity && projectileData != null) {
+                } else if (entity instanceof ProjectileEntity) {
                     rewindProjectileData(projectileData, entity, entities);
-                } else if (entity instanceof ItemEntity && itemData != null) {
+                } else if (entity instanceof ItemEntity) {
                     rewindItemData(itemData, entity, entities);
                 }
             });
@@ -101,8 +97,8 @@ public class RewindSystem {
         if (!foundInWorld.get()) {
             if (inLivingEntityData(livingEntityData, (LivingEntity) entity)) {
                 livingEntityData.forEach(data -> {
-                    if (!data.restored && entities.contains(data.entity)) {
-                        LivingEntityData.rewindDeadLivingEntityData(data, entity.level); // FIXME works only with PlayerEntity, but minecraft cant create PlayerEntity 💀
+                    if (!data.restored && !entities.contains(data.entity) && !(data.entity instanceof PlayerEntity)) {
+                        LivingEntityData.rewindDeadLivingEntityData(data, entity.level);
                     }
                 });
             }
@@ -125,8 +121,8 @@ public class RewindSystem {
                 entity.remove();
             } else {
                 projectileData.forEach(data -> {
-                    if (!data.restored && entities.contains(entity)) {
-                        ProjectileData.rewindDeadProjectileEntityData(data, entity.level); // FIXME works only with PlayerEntity, but minecraft cant create PlayerEntity 💀
+                    if (!data.restored && !entities.contains(entity)) {
+                        ProjectileData.rewindDeadProjectileEntityData(data, entity.level);
                         data.restored = true;
                     }
                 });
@@ -221,5 +217,10 @@ public class RewindSystem {
 
     public static boolean getRingoClock(LivingEntity entity, boolean damage) {
         return getRingoClock(entity, damage, Hand.OFF_HAND);
+    }
+
+    public static enum CooldownSystem {
+        TIME,
+        OWN;
     }
 }

@@ -25,14 +25,12 @@ public class InitStands {
 
     // ======================================== Mandom ========================================
     public static final RegistryObject<TimeRewind> TIME_REWIND = ACTIONS.register("time_rewind",
-            () -> new TimeRewind(new TimeRewind.Builder()
-                    .staminaCost(250)
-            ));
+            () -> new TimeRewind(new TimeRewind.Builder()));
     public static final EntityStandRegistryObject<EntityStandType<TimeStopperStandStats>, StandEntityType<MandomEntity>> STAND_MANDOM =
             new EntityStandRegistryObject<>("mandom",
                     STANDS,
                     () -> new EntityStandType.Builder<TimeStopperStandStats>()
-                            .color(0xDC85B2)
+                            .color(0xff6994)
                             .storyPartName(StoryPart.STEEL_BALL_RUN.getName())
                             .rightClickHotbar(TIME_REWIND.get())
                             .defaultMMB(TIME_REWIND.get())
@@ -50,12 +48,13 @@ public class InitStands {
                                     .build("Mandom")
                             )
                             .disableManualControl().disableStandLeap()
+                            .addSummonShout(InitSounds.USER_SUMMON)
                             .addOst(InitSounds.MANDOM_OST)
                             .build(),
                     InitEntities.ENTITIES,
                     () -> new StandEntityType<>(MandomEntity::new, 0, 0)
-                            .summonSound(InitSounds.MANDOM_SUMMON)
-                            .unsummonSound(InitSounds.MANDOM_UNSUMMON))
+                            .summonSound(InitSounds.STAND_SUMMON)
+                            .unsummonSound(InitSounds.STAND_UNSUMMON))
                     .withDefaultStandAttributes();
 
     public static final RegistryObject<RestoreDataButInActionMoment> REWIND_TIPO = ACTIONS.register("restore_data",
@@ -63,7 +62,6 @@ public class InitStands {
                     .ignoresPerformerStun()
                     .shaderEffect(new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom.json"), true)
                     .shaderEffect(new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom_old.json"), false)
-                    .timeStopSound(InitSounds.REWIND)
                     .autoSummonStand()
             ));
 }

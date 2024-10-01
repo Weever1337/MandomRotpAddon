@@ -1,5 +1,6 @@
 package uk.meow.weever.rotp_mandom.data.entity;
 
+import uk.meow.weever.rotp_mandom.config.TPARConfig;
 import uk.meow.weever.rotp_mandom.data.global.LookData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -61,12 +62,19 @@ public class ProjectileData {
     }
 
     public static void rewindDeadProjectileEntityData(ProjectileData projectileData, World level) {
-        if (projectileData.restored) return;
+        if (!TPARConfig.getRewindDeadLivingEntities(level.isClientSide()) || !(projectileData.entity instanceof ProjectileEntity)) return;
+    
         EntityType<?> entityType = projectileData.entity.getType();
+        if (entityType == null) {
+            return;
+        }
         ProjectileEntity newEntity = (ProjectileEntity) entityType.create(level);
-        if (newEntity == null) return;
+        if (newEntity == null) {
+            return;
+        }
+        
         projectileData.entity = newEntity;
+        level.addFreshEntity(newEntity);
         rewindProjectileData(projectileData);
-        projectileData.restored = true;
     }
 }

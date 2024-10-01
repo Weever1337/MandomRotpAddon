@@ -3,10 +3,10 @@ package uk.meow.weever.rotp_mandom.util;
 import uk.meow.weever.rotp_mandom.capability.PlayerUtilCap;
 import uk.meow.weever.rotp_mandom.capability.PlayerUtilCapProvider;
 import net.minecraft.entity.player.PlayerEntity;
-import uk.meow.weever.rotp_mandom.data.entity.EntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
+import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 
 import java.util.Queue;
@@ -51,10 +51,6 @@ public class CapabilityUtil {
 
     public static Queue<ItemData> getItemData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getItemData).orElse(null);
-    }
-
-    public static Queue<EntityData> getEntityData(PlayerEntity player) {
-        return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getEntityData).orElse(null);
     }
 
     public static WorldData getWorldData(PlayerEntity player) {

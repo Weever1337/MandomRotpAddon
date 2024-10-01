@@ -1,9 +1,9 @@
 package uk.meow.weever.rotp_mandom.capability;
 
-import uk.meow.weever.rotp_mandom.data.entity.EntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
+import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.TrSetDataIsEmptyPacket;
@@ -20,7 +20,7 @@ public class PlayerUtilCap {
     private Queue<LivingEntityData> livingEntityData = new LinkedList<>();
     private Queue<ProjectileData> projectileData = new LinkedList<>();
     private Queue<ItemData> itemData = new LinkedList<>();
-    private Queue<EntityData> entityData = new LinkedList<>();
+    private Queue<BlockData> inventoryBlockData = new LinkedList<>();
     private WorldData worldData = null;
 
     private boolean dataIsEmpty = true;
@@ -64,12 +64,12 @@ public class PlayerUtilCap {
         this.itemData = itemData;
     }
 
-    public Queue<EntityData> getEntityData() {
-        return entityData;
+    public Queue<BlockData> getInventoryBlockData() {
+        return inventoryBlockData;
     }
 
-    public void setEntityData(Queue<EntityData> entityData) {
-        this.entityData = entityData;
+    public void setInventoryBlockData(Queue<BlockData> data) {
+        this.inventoryBlockData = data;
     }
 
     public WorldData getWorldData() {

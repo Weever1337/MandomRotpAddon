@@ -1,5 +1,7 @@
 package uk.meow.weever.rotp_mandom.data.entity;
 
+import com.github.standobyte.jojo.power.impl.nonstand.INonStandPower;
+import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.MCUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -10,15 +12,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.TPARConfig;
-import uk.meow.weever.rotp_mandom.data.global.ExperienceData;
-import uk.meow.weever.rotp_mandom.data.global.InventorySaver;
-import uk.meow.weever.rotp_mandom.data.global.LookData;
+import uk.meow.weever.rotp_mandom.data.global.*;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.TrResetDeathTimePacket;
 
 import java.util.*;
 
 public class LivingEntityData {
+    public LivingEntity entity;
     private final Map<Integer, ItemStack> inventory;
     private final Vector3d position;
     private final float health;
@@ -27,13 +28,14 @@ public class LivingEntityData {
     private final Set<String> tags;
     private final Map<Integer, ItemStack> armor;
     private final Map<Integer, ItemStack> offhand;
-    public LivingEntity entity;
     private float absorptionAmount;
     private float fallDistance;
     private ExperienceData experienceData;
+    private final StandPowerData standPowerData;
+    private final NonPowerData nonPowerData;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, float absorptionAmount, float fallDistance, ExperienceData experienceData, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
@@ -46,6 +48,8 @@ public class LivingEntityData {
         this.absorptionAmount = absorptionAmount;
         this.fallDistance = fallDistance;
         this.experienceData = experienceData;
+        this.standPowerData = standPowerData;
+        this.nonPowerData = nonPowerData;
         this.restored = restored;
     }
 
@@ -59,23 +63,38 @@ public class LivingEntityData {
         if (entity instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) entity;
             player.getFoodData().setFoodLevel((int) livingEntityData.absorptionAmount);
-            if (TPARConfig.getSaveInventory(player.level.isClientSide())) {
+            if (TPARConfig.getSaveItems(player.level.isClientSide())) {
                 InventorySaver.loadPlayerArmor(player, livingEntityData.armor);
                 InventorySaver.loadPlayerInventory(player, livingEntityData.inventory);
                 InventorySaver.loadPlayerOffhand(player, livingEntityData.offhand);
             }
-            // if (livingEntityData.experienceData != null) {
+            // if (livingEntityData.experienceData != null) { // FIXME: not working a points...
             //     System.out.println("Experience data: " + livingEntityData.experienceData.level + " levels, " + livingEntityData.experienceData.points + " points, " + livingEntityData.experienceData.total + " total");
-            //     System.out.println("Points: " + livingEntityData.experienceData.points * 10);
             //     MCUtil.runCommand(player, "experience set @s " + livingEntityData.experienceData.level + " levels");
             //     MCUtil.runCommand(player, "experience set @s 0 points");
-            //     System.out.println((int) livingEntityData.experienceData.points);
-            //     player.giveExperiencePoints((int) livingEntityData.experienceData.points);
-            //     // player.giveExperiencePoints((int) livingEntityData.experienceData.points);
-            //     // player.experienceLevel = livingEntityData.experienceData.level;
-            //     // player.experienceProgress = livingEntityData.experienceData.points;
-            //     // player.totalExperience = livingEntityData.experienceData.total;
+            //     int expPoints = (int) (livingEntityData.experienceData.points);
+            //     System.out.println("Exp points: " + expPoints);
+            //     MCUtil.runCommand(entity, "experience set @s " + expPoints + " points");
+            //     player.totalExperience = livingEntityData.experienceData.total;
             // }
+        }
+        if (livingEntityData.standPowerData != null) {
+            IStandPower.getStandPowerOptional(entity).ifPresent(power -> {
+                if (power.getType() == livingEntityData.standPowerData.stand.getType() && TPARConfig.summonStandEnabled(entity.level)) {
+                    if (livingEntityData.standPowerData.summoned && !power.isActive()) {
+                        power.toggleSummon();
+                    } else if (!livingEntityData.standPowerData.summoned && power.isActive()) {
+                        power.toggleSummon();
+                    }
+                }
+            });
+        }
+        if (livingEntityData.nonPowerData != null) {
+            INonStandPower.getNonStandPowerOptional(entity).ifPresent(power -> {
+                if (power.getType() == livingEntityData.nonPowerData.power.getType()) {
+                    power.setEnergy(livingEntityData.nonPowerData.energy);
+                }
+            });
         }
         entity.setRemainingFireTicks(livingEntityData.fireTicks);
         entity.getTags().clear();
@@ -84,6 +103,16 @@ public class LivingEntityData {
     }
 
     public static LivingEntityData saveLivingEntityData(LivingEntity entity) {
+        IStandPower stand = IStandPower.getStandPowerOptional(entity).orElse(null);
+        StandPowerData standPowerData = null;
+        INonStandPower nonPower = INonStandPower.getNonStandPowerOptional(entity).orElse(null);
+        NonPowerData nonPowerData = null;
+        if (stand != null && TPARConfig.getSaveStandStats(entity.level.isClientSide())) {
+            standPowerData = new StandPowerData(stand, stand.isActive());
+        }
+        if (nonPower != null && TPARConfig.getSaveNonPowerStats(entity.level.isClientSide())) {
+            nonPowerData = new NonPowerData(nonPower, nonPower.getEnergy());
+        }
         return new LivingEntityData(
                 entity,
                 entity.position(),
@@ -97,24 +126,18 @@ public class LivingEntityData {
                 entity instanceof PlayerEntity ? ((PlayerEntity) entity).getFoodData().getFoodLevel() : 0,
                 entity.fallDistance,
                 entity instanceof PlayerEntity ? new ExperienceData(((PlayerEntity) entity).experienceLevel, ((PlayerEntity) entity).experienceProgress, ((PlayerEntity) entity).totalExperience) : null,
-                false
-        );
+                standPowerData, nonPowerData, false);
     }
 
     public static void rewindDeadLivingEntityData(LivingEntityData livingEntityData, World level) {
-        System.out.println("Entity: " + livingEntityData.entity.getName().getString());
         if (!TPARConfig.getRewindDeadLivingEntities(level.isClientSide()) || !(livingEntityData.entity instanceof MobEntity)) return;
     
         EntityType<?> entityType = livingEntityData.entity.getType();
         if (entityType == null) {
-            System.out.println("EntityType is null for entity: " + livingEntityData.entity);
             return;
         }
-        System.out.println("Level: " + level);
-        System.out.println("EntityType: " + entityType);
         LivingEntity newEntity = (LivingEntity) entityType.create(level);
         if (newEntity == null) {
-            System.out.println("Failed to create new entity for type: " + entityType);
             return;
         }
     

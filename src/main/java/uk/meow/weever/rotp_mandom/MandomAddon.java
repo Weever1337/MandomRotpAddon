@@ -1,6 +1,7 @@
 package uk.meow.weever.rotp_mandom;
 
 import uk.meow.weever.rotp_mandom.init.InitEntities;
+import uk.meow.weever.rotp_mandom.init.InitGamerules;
 import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.init.InitSounds;
 import uk.meow.weever.rotp_mandom.init.InitStands;
@@ -26,6 +27,7 @@ public class MandomAddon {
         InitStands.ACTIONS.register(modEventBus);
         InitStands.STANDS.register(modEventBus);
         InitItems.ITEMS.register(modEventBus);
+        InitGamerules.load();
         AddonPackets.init();
     }
 

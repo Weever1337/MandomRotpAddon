@@ -12,12 +12,16 @@ public class InitSounds {
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(
             ForgeRegistries.SOUND_EVENTS, MandomAddon.MOD_ID);
 
-    public static final RegistryObject<SoundEvent> MANDOM_SUMMON = SOUNDS.register("summon",
+    public static final RegistryObject<SoundEvent> USER_SUMMON = SOUNDS.register("summon",
             () -> new SoundEvent(new ResourceLocation(MandomAddon.MOD_ID, "summon"))
     );
 
-    public static final RegistryObject<SoundEvent> MANDOM_UNSUMMON = SOUNDS.register("unsummon",
-            () -> new SoundEvent(new ResourceLocation(MandomAddon.MOD_ID, "unsummon"))
+    public static final RegistryObject<SoundEvent> STAND_SUMMON = SOUNDS.register("stand_summon",
+            () -> new SoundEvent(new ResourceLocation(MandomAddon.MOD_ID, "stand_summon"))
+    );
+
+    public static final RegistryObject<SoundEvent> STAND_UNSUMMON = SOUNDS.register("stand_unsummon",
+            () -> new SoundEvent(new ResourceLocation(MandomAddon.MOD_ID, "stand_unsummon"))
     );
 
     public static final RegistryObject<SoundEvent> REWIND = SOUNDS.register("rewind",

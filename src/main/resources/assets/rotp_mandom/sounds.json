@@ -1,11 +1,17 @@
 {
   "summon": {
-    "sounds": [ "rotp_mandom:summon", "rotp_mandom:summon2" ]
+    "sounds": [ "rotp_mandom:summon" ]
   },
   "rewind": {
     "sounds": [ "rotp_mandom:rewind" ]
   },
   "void": {
     "sounds": [ "rotp_mandom:void" ]
+  },
+  "stand_summon": {
+    "sounds": [ "rotp_mandom:stand_summon" ]
+  },
+  "stand_unsummon": {
+    "sounds": [ "rotp_mandom:stand_unsummon" ]
   }
 }
