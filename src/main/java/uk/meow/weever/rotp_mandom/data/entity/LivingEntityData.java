@@ -80,7 +80,7 @@ public class LivingEntityData {
         }
         if (livingEntityData.standPowerData != null) {
             IStandPower.getStandPowerOptional(entity).ifPresent(power -> {
-                if (power.getType() == livingEntityData.standPowerData.stand.getType() && TPARConfig.summonStandEnabled(entity.level)) {
+                if (power.getType() == livingEntityData.standPowerData.stand.getType() && TPARConfig.summonStandEnabled(entity.level.isClientSide())) {
                     if (livingEntityData.standPowerData.summoned && !power.isActive()) {
                         power.toggleSummon();
                     } else if (!livingEntityData.standPowerData.summoned && power.isActive()) {

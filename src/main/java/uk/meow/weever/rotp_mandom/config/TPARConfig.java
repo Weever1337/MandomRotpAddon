@@ -1,10 +1,6 @@
 package uk.meow.weever.rotp_mandom.config;
 
-import com.github.standobyte.jojo.init.ModGamerules;
-
-import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.MandomConfig;
-import uk.meow.weever.rotp_mandom.init.InitGamerules;
 
 public class TPARConfig {
     public static int getSecond(boolean clientSide) {
@@ -56,7 +52,7 @@ public class TPARConfig {
         return MandomConfig.getCommonConfigInstance(clientSide).CooldownOwnTime.get();
     }
 
-    public static boolean summonStandEnabled(World world) {
-        return world.getGameRules().getBoolean(InitGamerules.MANDOM_TOGGLE_SUMMON_STAND_IN_REWIND);
+    public static boolean summonStandEnabled(boolean clientSide) {
+        return MandomConfig.getCommonConfigInstance(clientSide).SummonStandEnabled.get();
     }
 }

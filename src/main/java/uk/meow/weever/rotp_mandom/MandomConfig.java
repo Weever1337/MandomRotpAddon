@@ -91,6 +91,7 @@ public class MandomConfig {
         public final ForgeConfigSpec.BooleanValue SaveEntities;
         public final ForgeConfigSpec.BooleanValue SaveStandStats;
         public final ForgeConfigSpec.BooleanValue SaveNonPowerStats;
+        public final ForgeConfigSpec.BooleanValue SummonStandEnabled;
         public final ForgeConfigSpec.BooleanValue SaveWorld;
         public final ForgeConfigSpec.BooleanValue RewindDeadLivingEntities;
         private boolean loaded = false;
@@ -171,6 +172,11 @@ public class MandomConfig {
                     .comment("    Save non power stats.",
                             "    Defaults to true.")
                     .define("SaveNonPowerStats", true);
+            SummonStandEnabled = builder
+                    .translation("rotp_mandom.config.summon_stand_enabled")
+                    .comment("    Allow summoning stand in rewind.",
+                            "    Defaults to false.")
+                    .define("SummonStandEnabled", false);
             SaveWorld = builder
                     .translation("rotp_mandom.config.save_world")
                     .comment("    Save world.",
@@ -210,13 +216,13 @@ public class MandomConfig {
             private final boolean SaveEntities;
             private final boolean SaveStandStats;
             private final boolean SaveNonPowerStats;
+            private final boolean SummonStandEnabled;
             private final boolean SaveWorld;
             private final boolean RewindDeadLivingEntities;
 
             public SyncedValues(PacketBuffer buf) {
                 RewindInChunks = buf.readVarInt();
                 SaveInChunks = buf.readVarInt();
-//                GlobalShader = buf.readBoolean();
                 MaxCastRingoClock = buf.readVarInt();
                 CooldownForRewind = buf.readBoolean();
                 CooldownSystem = buf.readEnum(uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem.class);
@@ -227,6 +233,7 @@ public class MandomConfig {
                 SaveEntities = buf.readBoolean();
                 SaveStandStats = buf.readBoolean();
                 SaveNonPowerStats = buf.readBoolean();
+                SummonStandEnabled = buf.readBoolean();
                 SaveWorld = buf.readBoolean();
                 RewindDeadLivingEntities = buf.readBoolean();
             }
@@ -244,6 +251,7 @@ public class MandomConfig {
                 SaveEntities = config.SaveEntities.get();
                 SaveStandStats = config.SaveStandStats.get();
                 SaveNonPowerStats = config.SaveNonPowerStats.get();
+                SummonStandEnabled = config.SummonStandEnabled.get();
                 SaveWorld = config.SaveWorld.get();
                 RewindDeadLivingEntities = config.RewindDeadLivingEntities.get();
             }
@@ -261,6 +269,7 @@ public class MandomConfig {
                 COMMON_SYNCED_TO_CLIENT.SaveEntities.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveStandStats.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveNonPowerStats.clearCache();
+                COMMON_SYNCED_TO_CLIENT.SummonStandEnabled.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveWorld.clearCache();
                 COMMON_SYNCED_TO_CLIENT.RewindDeadLivingEntities.clearCache();
             }
@@ -286,6 +295,7 @@ public class MandomConfig {
                 buf.writeBoolean(SaveEntities);
                 buf.writeBoolean(SaveStandStats);
                 buf.writeBoolean(SaveNonPowerStats);
+                buf.writeBoolean(SummonStandEnabled);
                 buf.writeBoolean(SaveWorld);
                 buf.writeBoolean(RewindDeadLivingEntities);
             }
@@ -303,6 +313,7 @@ public class MandomConfig {
                 COMMON_SYNCED_TO_CLIENT.SaveEntities.set(SaveEntities);
                 COMMON_SYNCED_TO_CLIENT.SaveStandStats.set(SaveStandStats);
                 COMMON_SYNCED_TO_CLIENT.SaveNonPowerStats.set(SaveNonPowerStats);
+                COMMON_SYNCED_TO_CLIENT.SummonStandEnabled.set(SummonStandEnabled);
                 COMMON_SYNCED_TO_CLIENT.SaveWorld.set(SaveWorld);
                 COMMON_SYNCED_TO_CLIENT.RewindDeadLivingEntities.set(RewindDeadLivingEntities);
             }
