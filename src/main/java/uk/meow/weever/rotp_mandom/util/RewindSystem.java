@@ -1,6 +1,9 @@
 package uk.meow.weever.rotp_mandom.util;
 
 import com.github.standobyte.jojo.util.mc.MCUtil;
+
+import net.minecraft.block.AirBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
@@ -10,8 +13,11 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.data.entity.*;
 import uk.meow.weever.rotp_mandom.data.world.*;
+import uk.meow.weever.rotp_mandom.capability.PlayerUtilCapProvider;
 import uk.meow.weever.rotp_mandom.config.*;
 import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
@@ -19,6 +25,18 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RewindSystem {
+    public static Queue<BlockData> saveBlocks(PlayerEntity player, int range) {
+        Queue<BlockData> blockDataList = new LinkedList<>();
+        for (BlockPos pos : BlockPos.betweenClosed(
+                player.blockPosition().getX() - range, 0, player.blockPosition().getZ() - range,
+                player.blockPosition().getX() + range, 255, player.blockPosition().getZ() + range)) {
+
+            BlockState blockState = player.level.getBlockState(pos);
+            blockDataList.add(new BlockData(pos, blockState));
+        }
+        return blockDataList; 
+    }
+
     public static void saveData(PlayerEntity player, int range) {
         if (!player.level.isClientSide()) {
             CapabilityUtil.removeRewindData(player);
@@ -27,6 +45,9 @@ public class RewindSystem {
             Queue<ProjectileData> projectilesData = new LinkedList<>();
             Queue<ItemData> itemsData = new LinkedList<>();
             WorldData worldData = null;
+            Queue<BlockData> blockData = new LinkedList<>();
+            // blockData.addAll(saveBlocks(player, range / 2));
+
             if (TPARConfig.getSaveWorld(player.level.isClientSide())) {
                 worldData = WorldData.saveWorldData(player.level);
             }
@@ -52,7 +73,8 @@ public class RewindSystem {
                     projectilesData.add(ProjectileData.saveProjectileData(entity));
                 });
             }
-            CapabilityUtil.saveRewindData(player, livingEntitiesData, projectilesData, itemsData, worldData);
+
+            CapabilityUtil.saveRewindData(player, livingEntitiesData, projectilesData, itemsData, blockData, worldData);
         }
     }
 
@@ -61,12 +83,15 @@ public class RewindSystem {
             Queue<LivingEntityData> livingEntityData = CapabilityUtil.getLivingEntityData(player);
             Queue<ProjectileData> projectileData = CapabilityUtil.getProjectileData(player);
             Queue<ItemData> itemData = CapabilityUtil.getItemData(player);
+            // Queue<BlockData> savedBlocks = CapabilityUtil.getBlockData(player);
             List<Entity> entities = new ArrayList<>();
+
             entities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, filter -> livingEntityData != null && !(filter instanceof ArmorStandEntity)));
             entities.addAll(MCUtil.entitiesAround(ItemEntity.class, player, range, false, filter -> itemData != null));
             entities.addAll(MCUtil.entitiesAround(ProjectileEntity.class, player, range, false, filter -> projectileData != null));
             entities.addAll(MCUtil.entitiesAround(Entity.class, player, range, false, filter -> !(filter instanceof ArmorStandEntity)));
             entities.add(player);
+
             entities.forEach(entity -> {
                 if (entity instanceof LivingEntity) {
                     rewindLivingEntityData(livingEntityData, entity, entities);
@@ -80,7 +105,45 @@ public class RewindSystem {
             if (worldData != null) {
                 WorldData.rewindWorldData(worldData);
             }
+            // if (savedBlocks == null){
+            //     System.out.println("blyatttt");
+            // }
+            // restoreBlocks(savedBlocks, player.level);
             CapabilityUtil.removeRewindData(player);
+        }
+    }
+
+    // public static void restoreBlocks(Queue<BlockData> savedBlocks, World world) {
+    //     int chunkSize = 100;
+    //     List<BlockData> chunk = new ArrayList<>(chunkSize);
+
+    //     for (BlockData blockData : savedBlocks) {
+    //         chunk.add(blockData);
+    //         if (chunk.size() == chunkSize) {
+    //             restoreChunk(chunk, world);
+    //             chunk.clear();
+    //         }
+    //     }
+    //     if (!chunk.isEmpty()) {
+    //         restoreChunk(chunk, world);
+    //     }
+    // }
+
+    private static void restoreBlocks(Queue<BlockData> chunk, World world) {
+        boolean debugged = false;
+        for (BlockData blockData : chunk) {
+            BlockPos pos = blockData.pos;
+            BlockState savedState = blockData.blockState;
+            BlockState currentState = world.getBlockState(pos);
+                // System.out.println("Block: " + currentState + " | " + savedState);
+
+            if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
+                if (!debugged) {
+                    System.out.println("Block: " + currentState + " | " + savedState + " | " + pos);
+                }
+                debugged = true;
+                world.setBlockAndUpdate(pos, savedState);
+            }
         }
     }
 

@@ -7,7 +7,7 @@ version = "${addon_version}"
 displayName = "${mod_name}"
 displayURL = "https://discord.gg/4GcjnMnXP4"
 authors = "${mod_authors}"
-logoFile="logo.png"
+logoFile="banner.png"
 credits="StandoByte, Makuta Zeml (help's with models), TheDoGGys"
 description='''
 An Addon that adds Mandom to Ripples of the Past.

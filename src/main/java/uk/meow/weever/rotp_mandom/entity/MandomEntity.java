@@ -31,6 +31,10 @@ public class MandomEntity extends StandEntity {
         return SEC;
     }
 
+    public void setSEC(int sec) {
+        SEC = sec;
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -47,11 +51,6 @@ public class MandomEntity extends StandEntity {
             return;
         }
 
-        RayTraceResult rayTrace = JojoModUtil.rayTrace(user.getEyePosition(1.0F), user.getLookAngle(), 3,
-                level, user, e -> !(e.is(this) || e.is(user)), 0, 0);
-        ActionTarget target = ActionTarget.fromRayTraceResult(rayTrace);
-        target.resolveEntityId(level);
-
         if (this.getCurrentTaskAction() == ModStandsInit.UNSUMMON_STAND_ENTITY.get()) {
             SEC = -1;
             ticks = 0;
@@ -63,12 +62,16 @@ public class MandomEntity extends StandEntity {
             ticks++;
             if (SEC == -1) {
                 SEC = TPARConfig.getSecond(level.isClientSide());
-            } else if (ticks % 20 == 0) {
+            } else if (ticks % 20 == 0 && SEC != -2) {
                 SEC--;
 
                 if (SEC == 0) {
-                    SEC = -1;
+                    SEC = -2;
                     ticks = 0;
+                    RayTraceResult rayTrace = JojoModUtil.rayTrace(user.getEyePosition(1.0F), user.getLookAngle(), 3,
+                            level, user, e -> !(e.is(this) || e.is(user)), 0, 0);
+                    ActionTarget target = ActionTarget.fromRayTraceResult(rayTrace);
+                    target.resolveEntityId(level);
                     ClClickActionPacket packet = new ClClickActionPacket(
                             getUserPower().getPowerClassification(), InitStands.REWIND_TIPO.get(), target, false
                     );

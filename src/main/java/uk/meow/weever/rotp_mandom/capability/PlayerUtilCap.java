@@ -20,7 +20,7 @@ public class PlayerUtilCap {
     private Queue<LivingEntityData> livingEntityData = new LinkedList<>();
     private Queue<ProjectileData> projectileData = new LinkedList<>();
     private Queue<ItemData> itemData = new LinkedList<>();
-    private Queue<BlockData> inventoryBlockData = new LinkedList<>();
+    private Queue<BlockData> blockData = new LinkedList<>();
     private WorldData worldData = null;
 
     private boolean dataIsEmpty = true;
@@ -64,12 +64,12 @@ public class PlayerUtilCap {
         this.itemData = itemData;
     }
 
-    public Queue<BlockData> getInventoryBlockData() {
-        return inventoryBlockData;
+    public Queue<BlockData> getBlockData() {
+        return blockData;
     }
 
-    public void setInventoryBlockData(Queue<BlockData> data) {
-        this.inventoryBlockData = data;
+    public void setBlockData(Queue<BlockData> data) {
+        this.blockData = data;
     }
 
     public WorldData getWorldData() {

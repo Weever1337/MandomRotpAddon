@@ -4,11 +4,14 @@
   ],
   "passes": [
     {
-      "name": "jojo:time_stop",
+      "name": "color_convolve",
       "intarget": "minecraft:main",
       "outtarget": "swap",
       "uniforms": [
-        { "name": "TSEffectLength", "values": [ 35.0 ] },
+        {
+          "name": "Saturation",
+          "values": [ 0.5 ]
+        },
         {
             "name": "RedMatrix",
             "values": [ 1.0, 1.0, 1.0 ]

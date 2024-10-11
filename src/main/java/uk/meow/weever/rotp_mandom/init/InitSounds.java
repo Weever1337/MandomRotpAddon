@@ -32,5 +32,9 @@ public class InitSounds {
             () -> new SoundEvent(new ResourceLocation(MandomAddon.MOD_ID, "void"))
     );
 
+    public static final RegistryObject<SoundEvent> REWIND_START = SOUNDS.register("rewind_start",
+            () -> new SoundEvent(new ResourceLocation(MandomAddon.MOD_ID, "rewind_start"))
+    );
+
     static final OstSoundList MANDOM_OST = new OstSoundList(new ResourceLocation(MandomAddon.MOD_ID, "mandom_ost"), SOUNDS);
 }

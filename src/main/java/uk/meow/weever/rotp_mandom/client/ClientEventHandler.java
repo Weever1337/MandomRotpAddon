@@ -12,7 +12,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
-import net.minecraft.util.Timer;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -29,7 +28,6 @@ public class ClientEventHandler {
 
     private ClientEventHandler(Minecraft mc) {
         this.mc = mc;
-        Timer clientTimer = ClientReflection.getTimer(mc);
     }
 
     public static void init(Minecraft mc) {

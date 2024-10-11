@@ -13,5 +13,8 @@
   },
   "stand_unsummon": {
     "sounds": [ "rotp_mandom:stand_unsummon" ]
+  },
+  "rewind_start": {
+    "sounds": [ "rotp_mandom:rewind_start" ]
   }
 }

@@ -8,6 +8,7 @@ import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.power.impl.stand.IStandManifestation;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.general.LazySupplier;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -43,6 +44,8 @@ public class TimeRewind extends StandEntityAction {
             if (!CapabilityUtil.dataIsEmptyOrNot(player)) return;
             int RANGE = GlobalConfig.getTimePointChunks(world.isClientSide()) * 16;
             RewindSystem.saveData(player, RANGE);
+            MandomEntity mandom = (MandomEntity) standEntity;
+            mandom.setSEC(-1);
         }
     }
 
@@ -62,7 +65,7 @@ public class TimeRewind extends StandEntityAction {
         if (!CapabilityUtil.dataIsEmptyOrNot((PlayerEntity) power.getUser())) {
             if (RewindSystem.getRingoClock(power.getUser(), false)) {
                 int SEC = stand instanceof MandomEntity ? MandomEntity.getSEC() : 0;
-                if (SEC != -1) {
+                if (SEC > 0) {
                     return new TranslationTextComponent(key + ".sec", SEC);
                 }
             }

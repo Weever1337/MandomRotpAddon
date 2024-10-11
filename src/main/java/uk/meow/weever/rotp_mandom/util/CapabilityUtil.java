@@ -20,13 +20,18 @@ public class CapabilityUtil {
             PlayerEntity player,
             Queue<LivingEntityData> livingEntityData,
             Queue<ProjectileData> projectileData, Queue<ItemData> itemData,
+            Queue<BlockData> blockData,
             WorldData worldData
     ) {
+        // blockData.forEach(data -> {
+        //     System.out.println("Block: " + data.blockState);
+        // });
         player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
             cap.setLivingEntityData(livingEntityData);
             cap.setProjectileData(projectileData);
             cap.setItemData(itemData);
             cap.setWorldData(worldData);
+            cap.setBlockData(blockData);
             cap.setDataIsEmpty(false);
         });
     }
@@ -37,6 +42,7 @@ public class CapabilityUtil {
             cap.setProjectileData(null);
             cap.setItemData(null);
             cap.setWorldData(null);
+            cap.setBlockData(null);
             cap.setDataIsEmpty(true);
         });
     }
@@ -55,5 +61,9 @@ public class CapabilityUtil {
 
     public static WorldData getWorldData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getWorldData).orElse(null);
+    }
+
+    public static Queue<BlockData> getBlockData(PlayerEntity player) {
+        return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getBlockData).orElse(null);
     }
 }

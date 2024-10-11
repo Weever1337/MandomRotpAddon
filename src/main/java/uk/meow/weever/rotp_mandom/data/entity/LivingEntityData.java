@@ -9,6 +9,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.TPARConfig;
@@ -20,12 +21,13 @@ import java.util.*;
 
 public class LivingEntityData {
     public LivingEntity entity;
-    private final Map<Integer, ItemStack> inventory;
     private final Vector3d position;
     private final float health;
     private final LookData lookData;
     private final int fireTicks;
     private final Set<String> tags;
+    private final CompoundNBT persistentData;
+    private final Map<Integer, ItemStack> inventory;
     private final Map<Integer, ItemStack> armor;
     private final Map<Integer, ItemStack> offhand;
     private float absorptionAmount;
@@ -35,13 +37,14 @@ public class LivingEntityData {
     private final NonPowerData nonPowerData;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, CompoundNBT persistentData, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
         this.lookData = lookData;
         this.fireTicks = fireTicks;
         this.tags = tags;
+        this.persistentData = persistentData;
         this.inventory = inventory;
         this.armor = armor;
         this.offhand = offhand;
@@ -55,6 +58,14 @@ public class LivingEntityData {
 
     public static void rewindLivingEntityData(LivingEntityData livingEntityData) {
         LivingEntity entity = livingEntityData.entity;
+        entity.getPersistentData().getAllKeys().forEach(key -> {
+            System.out.println("[E] Key: " + key + ", Value: " + entity.getPersistentData().getString(key));
+        });
+        livingEntityData.persistentData.getAllKeys().forEach(key -> {
+            System.out.println("[M] Key: " + key + ", Value: " + livingEntityData.persistentData.getString(key));
+        });
+        entity.getPersistentData().getAllKeys().clear();
+        entity.getPersistentData().merge(livingEntityData.persistentData);
         entity.deathTime = 0;
         AddonPackets.sendToClientsTrackingAndSelf(new TrResetDeathTimePacket(entity.getId()), entity);
         entity.fallDistance = livingEntityData.fallDistance;
@@ -120,6 +131,7 @@ public class LivingEntityData {
                 new LookData(entity.xRot, entity.yRot),
                 entity.getRemainingFireTicks(),
                 entity.getTags(),
+                entity.getPersistentData(),
                 InventorySaver.savePlayerInventory(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerArmor(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerOffhand(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
@@ -144,10 +156,5 @@ public class LivingEntityData {
         livingEntityData.entity = newEntity;
         level.addFreshEntity(newEntity);
         rewindLivingEntityData(livingEntityData);
-    }
-    
-
-    public static boolean ifForRestoringLivingEntityData(List<Entity> entitiesAround, LivingEntityData livingEntityData) {
-        return entitiesAround.contains(livingEntityData.entity);
     }
 }
