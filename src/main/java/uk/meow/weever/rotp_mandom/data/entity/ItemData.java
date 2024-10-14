@@ -1,13 +1,16 @@
 package uk.meow.weever.rotp_mandom.data.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ItemData {
+public class ItemData implements IEntityData<ItemData, ItemEntity> {
     public ItemEntity entity;
     private final Vector3d position;
     private final ItemStack itemStack;
@@ -28,7 +31,7 @@ public class ItemData {
         entity.moveTo(itemData.position);
         entity.getTags().clear();
         entity.getTags().addAll(itemData.tags);
-        itemData.setRestored(true);
+        itemData.restored = true;
     }
 
     public static void rewindDeadItemData(ItemData itemData, World level) {
@@ -41,9 +44,8 @@ public class ItemData {
                 itemData.itemStack
         );
         itemData.entity = newItemEntity;
-        level.addFreshEntity(newItemEntity);
         rewindItemData(itemData);
-        itemData.setRestored(true);
+        level.addFreshEntity(newItemEntity);
     }
 
     public static ItemData saveItemData(ItemEntity entity) {
@@ -56,7 +58,36 @@ public class ItemData {
         );
     }
 
-    public void setRestored(boolean set) {
-        this.restored = set;
+    @Override
+    public Entity getEntity(IEntityData<ItemData, ItemEntity> data) {
+        return ((ItemData)data).entity;
+    }
+
+    @Override
+    public void rewindData(IEntityData<ItemData, ItemEntity> data) {
+        if (((ItemData)data).restored) return;
+        rewindItemData(((ItemData)data));
+    }
+
+    @Override
+    public boolean isRestored(IEntityData<ItemData, ItemEntity> data) {
+        return ((ItemData)data).restored;
+    }
+
+    @Override
+    public void rewindDeadData(IEntityData<ItemData, ItemEntity> data, World level) {
+        if (((ItemData)data).restored) return;
+        rewindDeadItemData(((ItemData)data), level);
+    }
+
+    @Override
+    public boolean inData(Queue<IEntityData<ItemData, ItemEntity>> itemData, ItemEntity entity) {
+        AtomicBoolean inData = new AtomicBoolean(false);
+        itemData.forEach(data -> {
+            if (data.getEntity(data) == entity) {
+                inData.set(true);
+            }
+        });
+        return inData.get();
     }
 }

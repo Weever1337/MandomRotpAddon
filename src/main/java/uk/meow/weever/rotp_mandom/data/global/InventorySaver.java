@@ -3,6 +3,8 @@ package uk.meow.weever.rotp_mandom.data.global;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import uk.meow.weever.rotp_mandom.network.AddonPackets;
+import uk.meow.weever.rotp_mandom.network.server.RWSetSelectedSlot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,40 @@ public class InventorySaver {
         }
     }
 
+    public static int saveSelectedSlot(PlayerEntity player) {
+        if (player == null) return -1;
+        return player.inventory.selected;
+    }
+
+    public static void loadSelectedSlot(PlayerEntity player, int slot) {
+        if (player == null) return;
+
+        player.inventory.selected = slot;
+        AddonPackets.sendToClient(new RWSetSelectedSlot(player.getId(), slot), player);
+    }
+
+    public static Map<Integer, ItemStack> savePlayerEnderChestInventory(PlayerEntity player) {
+        Map<Integer, ItemStack> enderChestInventoryMap = new HashMap<>();
+        if (player == null) return enderChestInventoryMap;
+
+        for (int i = 0; i < player.getEnderChestInventory().getContainerSize(); i++) {
+            ItemStack itemStack = player.getEnderChestInventory().getItem(i);
+            enderChestInventoryMap.put(i, itemStack.copy());
+        }
+
+        return enderChestInventoryMap;
+    }
+
+    public static void loadPlayerChestInventory(PlayerEntity player, Map<Integer, ItemStack> savedEnderChestInventory) {
+        if (player == null) return;
+
+        for (Map.Entry<Integer, ItemStack> entry : savedEnderChestInventory.entrySet()) {
+            int slot = entry.getKey();
+            ItemStack itemStack = entry.getValue();
+            player.getEnderChestInventory().setItem(slot, itemStack.copy());
+        }
+    }
+
     public static Map<Integer, ItemStack> savePlayerArmor(PlayerEntity player) {
         Map<Integer, ItemStack> armorMap = new HashMap<>();
         if (player == null) return armorMap;
@@ -45,7 +81,6 @@ public class InventorySaver {
         return armorMap;
     }
 
-    // Загружаем броню игрока, возвращая предметы в те же слоты
     public static void loadPlayerArmor(PlayerEntity player, Map<Integer, ItemStack> savedArmor) {
         if (player == null) return;
 
@@ -59,7 +94,6 @@ public class InventorySaver {
         }
     }
 
-    // Сохраняем предмет в руке игрока с учетом слотов
     public static Map<Integer, ItemStack> savePlayerOffhand(PlayerEntity player) {
         Map<Integer, ItemStack> offhandMap = new HashMap<>();
         if (player == null) return offhandMap;
@@ -75,7 +109,6 @@ public class InventorySaver {
         return offhandMap;
     }
 
-    // Загружаем предмет в руке игрока, возвращая его в тот же слот
     public static void loadPlayerOffhand(PlayerEntity player, Map<Integer, ItemStack> savedOffhand) {
         if (player == null) return;
 

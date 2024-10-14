@@ -1,9 +1,15 @@
 package uk.meow.weever.rotp_mandom.client;
 
 import com.github.standobyte.jojo.client.render.entity.layerrenderer.HamonBurnLayer;
+import com.github.standobyte.jojo.client.ui.standstats.StandStatsRenderer;
+import com.github.standobyte.jojo.client.ui.standstats.StandStatsRenderer.StandStat;
+import com.github.standobyte.jojo.power.impl.stand.IStandPower;
+import com.github.standobyte.jojo.power.impl.stand.stats.StandStats;
+
 import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.client.render.MandomLayerRenderer;
 import uk.meow.weever.rotp_mandom.client.render.MandomRenderer;
+import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerModel;
 import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerRenderer;
 import uk.meow.weever.rotp_mandom.init.InitStands;
 import net.minecraft.client.Minecraft;
@@ -33,6 +39,21 @@ public class ClientInit {
                 InitStands.STAND_MANDOM.getEntityType(), MandomRenderer::new
         );
 
+        StandStatsRenderer.overrideCosmeticStats(
+            InitStands.STAND_MANDOM.getStandType().getRegistryName(), 
+            new StandStatsRenderer.ICosmeticStandStats() {
+                @Override public double statConvertedValue(StandStat stat, IStandPower standData, StandStats stats, float statLeveling) {
+                    switch (stat) {
+                    case RANGE:
+                        return 0;
+                    case DEV_POTENTIAL:
+                        return 3;
+                    default:
+                        return StandStatsRenderer.ICosmeticStandStats.super.statConvertedValue(stat, standData, stats, statLeveling);
+                    }
+                }
+            });
+
         event.enqueueWork(() -> {
             ClientEventHandler.init(mc);
             addLayers(skinMap.get("default"), false);
@@ -44,7 +65,7 @@ public class ClientInit {
 
     private static void addLayers(PlayerRenderer renderer, boolean slim) {
         renderer.addLayer(new MandomLayerRenderer<>(renderer));
-        renderer.addLayer(new RingoLayerRenderer<>(renderer));
+        renderer.addLayer(new RingoLayerRenderer<>(renderer, new RingoLayerModel<>(0.3f, true)));
         addLivingLayers(renderer);
         addBipedLayers(renderer);
     }

@@ -10,6 +10,4 @@ public class MandomModel extends HumanoidStandModel<MandomEntity> {
         texWidth = 128;
         texHeight = 128;
     }
-
-
 }

@@ -4,7 +4,6 @@ import com.github.standobyte.jojo.action.Action;
 import com.github.standobyte.jojo.entity.stand.StandEntityType;
 import com.github.standobyte.jojo.init.power.stand.EntityStandRegistryObject;
 import com.github.standobyte.jojo.power.impl.stand.stats.StandStats;
-import com.github.standobyte.jojo.power.impl.stand.stats.TimeStopperStandStats;
 import com.github.standobyte.jojo.power.impl.stand.type.EntityStandType;
 import com.github.standobyte.jojo.power.impl.stand.type.StandType;
 import com.github.standobyte.jojo.util.mod.StoryPart;
@@ -36,12 +35,11 @@ public class InitStands {
                             .rightClickHotbar(TIME_REWIND.get())
                             .defaultStats(StandStats.class, new StandStats.Builder()
                                     .power(0.0)
-                                    .speed(16.0)
-                                    .durability(4.0)
+                                    .speed(18.0)
+                                    .durability(1.0)
                                     .precision(0.0)
                                     .randomWeight(2.0)
-                                    .range(1, 1)
-                                    .build("Mandom")
+                                    .range(2)
                             )
                             .disableManualControl().disableStandLeap()
                             .addSummonShout(InitSounds.USER_SUMMON)
@@ -56,8 +54,6 @@ public class InitStands {
     public static final RegistryObject<RestoreDataButInActionMoment> REWIND_TIPO = ACTIONS.register("restore_data",
             () -> new RestoreDataButInActionMoment(new RestoreDataButInActionMoment.Builder()
                     .ignoresPerformerStun()
-                //     .shaderEffect(new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom.json"), true)
-                //     .shaderEffect(new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom_old.json"), false)
                     .autoSummonStand()
             ));
 }

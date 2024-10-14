@@ -13,7 +13,7 @@ import uk.meow.weever.rotp_mandom.entity.MandomEntity;
 import uk.meow.weever.rotp_mandom.init.InitSounds;
 import uk.meow.weever.rotp_mandom.init.InitStands;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
-import uk.meow.weever.rotp_mandom.network.server.SetMandomShader;
+import uk.meow.weever.rotp_mandom.network.server.RWSetMandomShader;
 import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -43,7 +43,7 @@ public class RestoreDataButInActionMoment extends StandEntityAction {
             LivingEntity user = power.getUser();
             world.playSound(null,user.blockPosition(), InitSounds.REWIND.get(), SoundCategory.PLAYERS,1,1);
             if (user instanceof ServerPlayerEntity) {
-                AddonPackets.sendToClient(new SetMandomShader(user.getId(), true), (ServerPlayerEntity) user);
+                AddonPackets.sendToClient(new RWSetMandomShader(user.getId(), true), (ServerPlayerEntity) user);
             }
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide());
             RewindSystem.rewindData((PlayerEntity) user, RANGE * 16);
@@ -56,7 +56,7 @@ public class RestoreDataButInActionMoment extends StandEntityAction {
                 }
             }
             if (!user.hasEffect(ModStatusEffects.RESOLVE.get()) &&user instanceof ServerPlayerEntity) {
-                AddonPackets.sendToClient(new SetMandomShader(user.getId(), false), (ServerPlayerEntity) user);
+                AddonPackets.sendToClient(new RWSetMandomShader(user.getId(), false), (ServerPlayerEntity) user);
             }
             MandomEntity mandom = (MandomEntity) standEntity;
             mandom.setSEC(-2);

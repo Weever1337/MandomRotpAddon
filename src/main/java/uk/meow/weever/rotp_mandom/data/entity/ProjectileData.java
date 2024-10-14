@@ -2,15 +2,18 @@ package uk.meow.weever.rotp_mandom.data.entity;
 
 import uk.meow.weever.rotp_mandom.config.TPARConfig;
 import uk.meow.weever.rotp_mandom.data.global.LookData;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ProjectileData {
+public class ProjectileData implements IEntityData<ProjectileData, ProjectileEntity> {
     private final Vector3d position;
     private final Set<String> tags;
     private final boolean noPhysics;
@@ -76,5 +79,38 @@ public class ProjectileData {
         projectileData.entity = newEntity;
         level.addFreshEntity(newEntity);
         rewindProjectileData(projectileData);
+    }
+
+    @Override
+    public Entity getEntity(IEntityData<ProjectileData, ProjectileEntity> data) {
+        return ((ProjectileData)data).entity;
+    }
+
+    @Override
+    public void rewindData(IEntityData<ProjectileData, ProjectileEntity> data) {
+        if (((ProjectileData)data).restored) return;
+        rewindProjectileData(((ProjectileData)data));
+    }
+
+    @Override
+    public boolean isRestored(IEntityData<ProjectileData, ProjectileEntity> data) {
+        return ((ProjectileData)data).restored;
+    }
+
+    @Override
+    public void rewindDeadData(IEntityData<ProjectileData, ProjectileEntity> data, World level) {
+        if (((ProjectileData)data).restored) return;
+        rewindDeadProjectileEntityData(((ProjectileData)data), level);
+    }
+
+    @Override
+    public boolean inData(Queue<IEntityData<ProjectileData, ProjectileEntity>> projData, ProjectileEntity entity) {
+        AtomicBoolean inData = new AtomicBoolean(false);
+        projData.forEach(data -> {
+            if (data.getEntity(data) == entity) {
+                inData.set(true);
+            }
+        });
+        return inData.get();
     }
 }

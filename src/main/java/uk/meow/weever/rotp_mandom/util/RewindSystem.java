@@ -2,8 +2,6 @@ package uk.meow.weever.rotp_mandom.util;
 
 import com.github.standobyte.jojo.util.mc.MCUtil;
 
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
@@ -13,29 +11,32 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import uk.meow.weever.rotp_mandom.data.entity.*;
 import uk.meow.weever.rotp_mandom.data.world.*;
-import uk.meow.weever.rotp_mandom.capability.PlayerUtilCapProvider;
+import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.config.*;
 import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Mod.EventBusSubscriber(modid = MandomAddon.MOD_ID)
 public class RewindSystem {
-    public static Queue<BlockData> saveBlocks(PlayerEntity player, int range) {
-        Queue<BlockData> blockDataList = new LinkedList<>();
-        for (BlockPos pos : BlockPos.betweenClosed(
-                player.blockPosition().getX() - range, 0, player.blockPosition().getZ() - range,
-                player.blockPosition().getX() + range, 255, player.blockPosition().getZ() + range)) {
+    private static Set<PlayerEntity> zePizdecForBlockInteraction = new HashSet<>();
+    // public static Queue<BlockData> saveBlocks(PlayerEntity player, int range) {
+    //     Queue<BlockData> blockDataList = new LinkedList<>();
+    //     for (BlockPos pos : BlockPos.betweenClosed(
+    //             player.blockPosition().getX() - range, 0, player.blockPosition().getZ() - range,
+    //             player.blockPosition().getX() + range, 255, player.blockPosition().getZ() + range)) {
 
-            BlockState blockState = player.level.getBlockState(pos);
-            blockDataList.add(new BlockData(pos, blockState));
-        }
-        return blockDataList; 
-    }
+    //         BlockState blockState = player.level.getBlockState(pos);
+    //         blockDataList.add(new BlockData(pos, blockState));
+    //     }
+    //     return blockDataList; 
+    // }
 
     public static void saveData(PlayerEntity player, int range) {
         if (!player.level.isClientSide()) {
@@ -46,7 +47,6 @@ public class RewindSystem {
             Queue<ItemData> itemsData = new LinkedList<>();
             WorldData worldData = null;
             Queue<BlockData> blockData = new LinkedList<>();
-            // blockData.addAll(saveBlocks(player, range / 2));
 
             if (TPARConfig.getSaveWorld(player.level.isClientSide())) {
                 worldData = WorldData.saveWorldData(player.level);
@@ -73,6 +73,9 @@ public class RewindSystem {
                     projectilesData.add(ProjectileData.saveProjectileData(entity));
                 });
             }
+            if (!zePizdecForBlockInteraction.contains(player)) {
+                zePizdecForBlockInteraction.add(player);
+            }
 
             CapabilityUtil.saveRewindData(player, livingEntitiesData, projectilesData, itemsData, blockData, worldData);
         }
@@ -83,7 +86,6 @@ public class RewindSystem {
             Queue<LivingEntityData> livingEntityData = CapabilityUtil.getLivingEntityData(player);
             Queue<ProjectileData> projectileData = CapabilityUtil.getProjectileData(player);
             Queue<ItemData> itemData = CapabilityUtil.getItemData(player);
-            // Queue<BlockData> savedBlocks = CapabilityUtil.getBlockData(player);
             List<Entity> entities = new ArrayList<>();
 
             entities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, filter -> livingEntityData != null && !(filter instanceof ArmorStandEntity)));
@@ -91,162 +93,66 @@ public class RewindSystem {
             entities.addAll(MCUtil.entitiesAround(ProjectileEntity.class, player, range, false, filter -> projectileData != null));
             entities.addAll(MCUtil.entitiesAround(Entity.class, player, range, false, filter -> !(filter instanceof ArmorStandEntity)));
             entities.add(player);
-
             entities.forEach(entity -> {
-                if (entity instanceof LivingEntity) {
-                    rewindLivingEntityData(livingEntityData, entity, entities);
-                } else if (entity instanceof ProjectileEntity) {
-                    rewindProjectileData(projectileData, entity, entities);
-                } else if (entity instanceof ItemEntity) {
-                    rewindItemData(itemData, entity, entities);
-                }
+                if (entity instanceof LivingEntity)
+                    rewindEntityData(livingEntityData, entity, entities);
+                if (entity instanceof ProjectileEntity)
+                    rewindEntityData(projectileData, entity, entities);
+                if (entity instanceof ItemEntity)
+                    rewindEntityData(itemData, entity, entities);
             });
+
             WorldData worldData = CapabilityUtil.getWorldData(player);
             if (worldData != null) {
                 WorldData.rewindWorldData(worldData);
             }
-            // if (savedBlocks == null){
-            //     System.out.println("blyatttt");
-            // }
-            // restoreBlocks(savedBlocks, player.level);
+            if (zePizdecForBlockInteraction.contains(player)) {
+                zePizdecForBlockInteraction.remove(player);
+            }
             CapabilityUtil.removeRewindData(player);
         }
     }
 
-    // public static void restoreBlocks(Queue<BlockData> savedBlocks, World world) {
-    //     int chunkSize = 100;
-    //     List<BlockData> chunk = new ArrayList<>(chunkSize);
+    @SuppressWarnings("unchecked")
+    private static <T, M> void rewindEntityData(Queue<? extends IEntityData<T, M>> dataQueue, Entity entity, List<Entity> entities) {
+        AtomicBoolean foundInWorld = new AtomicBoolean(false);
+        dataQueue.forEach(data -> {
+            if (!data.isRestored(data) && data.getEntity(data) == entity) {
+                foundInWorld.set(true);
+                data.rewindData(data);
+            }
+        });
+        if (!foundInWorld.get()) {
+            IEntityData<T, M> exampleData = dataQueue.peek();
+            if (exampleData != null && !exampleData.inData((Queue<IEntityData<T, M>>) dataQueue, (M) entity)) {
+                entity.remove();
+            } else {
+                dataQueue.forEach(data -> {
+                    if (!data.isRestored(data) && entities.contains(entity)) {
+                        data.rewindDeadData(data, entity.level);
+                    }
+                });
+            }
+        }
+    }
 
-    //     for (BlockData blockData : savedBlocks) {
-    //         chunk.add(blockData);
-    //         if (chunk.size() == chunkSize) {
-    //             restoreChunk(chunk, world);
-    //             chunk.clear();
+    // private static void restoreBlocks(Queue<BlockData> chunk, World world) {
+    //     boolean debugged = false;
+    //     for (BlockData blockData : chunk) {
+    //         BlockPos pos = blockData.pos;
+    //         BlockState savedState = blockData.blockState;
+    //         BlockState currentState = world.getBlockState(pos);
+    //             // System.out.println("Block: " + currentState + " | " + savedState);
+
+    //         if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
+    //             if (!debugged) {
+    //                 System.out.println("Block: " + currentState + " | " + savedState + " | " + pos);
+    //             }
+    //             debugged = true;
+    //             world.setBlockAndUpdate(pos, savedState);
     //         }
     //     }
-    //     if (!chunk.isEmpty()) {
-    //         restoreChunk(chunk, world);
-    //     }
     // }
-
-    private static void restoreBlocks(Queue<BlockData> chunk, World world) {
-        boolean debugged = false;
-        for (BlockData blockData : chunk) {
-            BlockPos pos = blockData.pos;
-            BlockState savedState = blockData.blockState;
-            BlockState currentState = world.getBlockState(pos);
-                // System.out.println("Block: " + currentState + " | " + savedState);
-
-            if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
-                if (!debugged) {
-                    System.out.println("Block: " + currentState + " | " + savedState + " | " + pos);
-                }
-                debugged = true;
-                world.setBlockAndUpdate(pos, savedState);
-            }
-        }
-    }
-
-    private static void rewindLivingEntityData(Queue<LivingEntityData> livingEntityData, Entity entity, List<Entity> entities) {
-        AtomicBoolean foundInWorld = new AtomicBoolean(false);
-        livingEntityData.forEach(data -> {
-            if (!data.restored && data.entity == entity) {
-                foundInWorld.set(true);
-                if (entities.contains(data.entity)) {
-                    LivingEntityData.rewindLivingEntityData(data);
-                }
-            }
-        });
-        if (!foundInWorld.get()) {
-            if (inLivingEntityData(livingEntityData, (LivingEntity) entity)) {
-                livingEntityData.forEach(data -> {
-                    if (!data.restored && !entities.contains(data.entity) && !(data.entity instanceof PlayerEntity)) {
-                        LivingEntityData.rewindDeadLivingEntityData(data, entity.level);
-                    }
-                });
-            }
-        }
-    }
-
-    private static void rewindProjectileData(Queue<ProjectileData> projectileData, Entity entity, List<Entity> entities) {
-        AtomicBoolean foundInWorld = new AtomicBoolean(false);
-        projectileData.forEach(data -> {
-            if (!data.restored && data.entity == entity) {
-                foundInWorld.set(true);
-                if (entities.contains(data.entity)) {
-                    ProjectileData.rewindProjectileData(data);
-                    data.restored = true;
-                }
-            }
-        });
-        if (!foundInWorld.get()) {
-            if (!inProjectileData(projectileData, (ProjectileEntity) entity)) {
-                entity.remove();
-            } else {
-                projectileData.forEach(data -> {
-                    if (!data.restored && !entities.contains(entity)) {
-                        ProjectileData.rewindDeadProjectileEntityData(data, entity.level);
-                        data.restored = true;
-                    }
-                });
-            }
-        }
-    }
-
-    private static void rewindItemData(Queue<ItemData> itemData, Entity entity, List<Entity> entities) {
-        AtomicBoolean foundInWorld = new AtomicBoolean(false);
-        itemData.forEach(data -> {
-            if (!data.restored && data.entity == entity) {
-                foundInWorld.set(true);
-                if (inItemData(itemData, (ItemEntity) entity)) {
-                    ItemData.rewindItemData(data);
-                    data.setRestored(true);
-                }
-            }
-        });
-        if (!foundInWorld.get()) {
-            if (!inItemData(itemData, (ItemEntity) entity)) {
-                entity.remove();
-            } else {
-                itemData.forEach(data -> {
-                    if (!data.restored && entities.contains(entity)) {
-                        ItemData.rewindDeadItemData(data, entity.level);
-                        data.setRestored(true);
-                    }
-                });
-            }
-        }
-    }
-
-    public static boolean inLivingEntityData(Queue<LivingEntityData> livingEntityData, LivingEntity entity) {
-        AtomicBoolean inData = new AtomicBoolean(false);
-        livingEntityData.forEach(data -> {
-            if (data.entity == entity) {
-                inData.set(true);
-            }
-        });
-        return inData.get();
-    }
-
-    public static boolean inItemData(Queue<ItemData> itemData, ItemEntity entity) {
-        AtomicBoolean inData = new AtomicBoolean(false);
-        itemData.forEach(data -> {
-            if (data.entity == entity) {
-                inData.set(true);
-            }
-        });
-        return inData.get();
-    }
-
-    public static boolean inProjectileData(Queue<ProjectileData> projectileData, ProjectileEntity entity) {
-        AtomicBoolean inData = new AtomicBoolean(false);
-        projectileData.forEach(data -> {
-            if (data.entity == entity) {
-                inData.set(true);
-            }
-        });
-        return inData.get();
-    }
 
     public static boolean getRingoClock(LivingEntity entity, boolean damage, Hand hand) {
         ItemStack itemStack;
@@ -285,5 +191,26 @@ public class RewindSystem {
     public static enum CooldownSystem {
         TIME,
         OWN;
+    }
+
+    @SubscribeEvent
+    public static void onPlayerInteract(PlayerInteractEvent event) {
+        PlayerEntity player = event.getPlayer();
+        AtomicBoolean canceled = new AtomicBoolean(false);
+        if (!event.isCancelable() || player == null || !GlobalConfig.getBlockInteractWhileRewind(player.level.isClientSide())) return;
+
+        zePizdecForBlockInteraction.forEach(uniquePlayer -> {
+            if (uniquePlayer == player) {
+                MandomAddon.LOGGER.warn(1);
+                canceled.set(true);
+            }
+            if (player.distanceTo(uniquePlayer) <= GlobalConfig.getTimeRewindChunks(player.level.isClientSide()) * 16) {
+                MandomAddon.LOGGER.warn(2);
+                canceled.set(true);
+            }
+        });
+        
+        MandomAddon.LOGGER.warn("Blocked INTERACTION: " + canceled.get());
+        event.setCanceled(canceled.get());
     }
 }

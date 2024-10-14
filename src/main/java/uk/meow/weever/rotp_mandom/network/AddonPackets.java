@@ -2,6 +2,7 @@ package uk.meow.weever.rotp_mandom.network;
 
 import com.github.standobyte.jojo.network.packets.IModPacketHandler;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.FakePlayer;
@@ -31,7 +32,8 @@ public class AddonPackets {
         registerMessage(channel, new ResetSyncedCommonConfigPacket.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new TrSetDataIsEmptyPacket.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new TrResetDeathTimePacket.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-        registerMessage(channel, new SetMandomShader.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        registerMessage(channel, new RWSetMandomShader.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        registerMessage(channel, new RWSetSelectedSlot.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     private static <MSG> void registerMessage(SimpleChannel channel, IModPacketHandler<MSG> handler, Optional<NetworkDirection> networkDirection) {
@@ -44,6 +46,14 @@ public class AddonPackets {
     public static void sendToClient(Object msg, ServerPlayerEntity player) {
         if (!(player instanceof FakePlayer)) {
             channel.send(PacketDistributor.PLAYER.with(() -> player), msg);
+        }
+    }
+
+    public static void sendToClient(Object msg, PlayerEntity player) {
+        if (player instanceof ServerPlayerEntity) {
+            sendToClient(msg, ((ServerPlayerEntity) player));
+        } else {
+            MandomAddon.LOGGER.warn("You can't send a message not by a player!");
         }
     }
 

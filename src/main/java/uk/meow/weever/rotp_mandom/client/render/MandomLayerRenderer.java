@@ -29,7 +29,6 @@ public class MandomLayerRenderer<T extends LivingEntity, M extends BipedModel<T>
     private static final Map<PlayerRenderer, MandomLayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> RENDERER_LAYERS = new HashMap<>();
     private static final ResourceLocation TEXTURE = new ResourceLocation(MandomAddon.MOD_ID, "textures/entity/stand/mandom_layer.png");
     private final MandomLayerModel<T, BipedModel<T>> mandomArchive = new MandomLayerModel<>(0, false);
-    private boolean playerAnimHandled = false;
 
     public MandomLayerRenderer(IEntityRenderer<T, M> renderer) {
         super(renderer);
@@ -43,10 +42,6 @@ public class MandomLayerRenderer<T extends LivingEntity, M extends BipedModel<T>
                        float limbSwing, float limbSwingAmount, float partialTick, float ticks, float yRot, float xRot) {
         if (!ClientUtil.canSeeStands()) {
             return;
-        }
-        if (!playerAnimHandled) {
-            PlayerAnimationHandler.getPlayerAnimator().onArmorLayerInit(this);
-            playerAnimHandled = true;
         }
         IStandPower.getStandPowerOptional(entity).ifPresent((stand) -> {
             StandType<?> mandom = InitStands.STAND_MANDOM.getStandType();

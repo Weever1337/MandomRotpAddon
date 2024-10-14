@@ -38,8 +38,8 @@ public class RingoLayerModel <T extends LivingEntity> extends PlayerModel<T> {
 
     @Override
     public void setupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount, float ticks, float yRot, float xRot) {
-        arrow.xRot = (0.5F + ticks)/40;
-        arrow2.xRot = (0.5F - ticks)/40;
+        arrow.xRot = (0.5F - ticks)/40;
+        arrow2.xRot = (0.5F + ticks)/40;
     }
 
     public void setupClockPosition(LivingEntity entity, boolean leftHand, boolean rightHand) {

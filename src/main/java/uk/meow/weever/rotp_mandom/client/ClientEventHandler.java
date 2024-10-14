@@ -1,5 +1,6 @@
 package uk.meow.weever.rotp_mandom.client;
 
+import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.github.standobyte.jojo.util.mc.MCUtil;
 import com.github.standobyte.jojo.util.mc.reflection.ClientReflection;
 import com.google.common.base.MoreObjects;
@@ -10,6 +11,7 @@ import net.minecraft.client.renderer.FirstPersonRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.math.MathHelper;
@@ -18,7 +20,6 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerRenderer;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 
 public class ClientEventHandler {
@@ -42,10 +43,15 @@ public class ClientEventHandler {
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderHand(RenderHandEvent event) {
         ClientPlayerEntity player = Minecraft.getInstance().player;
-        ItemStack stack = player.getItemInHand(event.getHand());
-        if (!event.isCanceled() && !modPostedEvent && event.getHand() == Hand.MAIN_HAND && !player.isInvisible() && !stack.isEmpty()) {
-            if (stack.getItem() instanceof RingoClock && !MCUtil.isHandFree(player, Hand.MAIN_HAND)) {
+        if (!event.isCanceled() && !modPostedEvent && !(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
+            ItemStack stack = player.getItemInHand(event.getHand());
+            if (event.getHand() == Hand.MAIN_HAND && !stack.isEmpty() && stack.getItem() instanceof RingoClock) {
                 renderHand(Hand.MAIN_HAND, event.getMatrixStack(), event.getBuffers(), event.getLight(),
+                        event.getPartialTicks(), event.getInterpolatedPitch(), player);
+                event.setCanceled(true);
+            }
+            if (event.getHand() == Hand.OFF_HAND && !stack.isEmpty() && stack.getItem() instanceof RingoClock) {
+                renderHand(Hand.OFF_HAND, event.getMatrixStack(), event.getBuffers(), event.getLight(),
                         event.getPartialTicks(), event.getInterpolatedPitch(), player);
                 event.setCanceled(true);
             }
@@ -72,7 +78,6 @@ public class ClientEventHandler {
             matrixStack.pushPose();
             ClientReflection.renderPlayerArm(matrixStack, buffer, light, equipProgress,
                     swingProgress, handSide, renderer);
-            RingoLayerRenderer.renderFirstPerson(handSide, matrixStack, buffer, light, player);
             matrixStack.popPose();
         }
         modPostedEvent = false;
