@@ -9,6 +9,7 @@ import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class CapabilityUtil {
@@ -20,30 +21,33 @@ public class CapabilityUtil {
             PlayerEntity player,
             Queue<LivingEntityData> livingEntityData,
             Queue<ProjectileData> projectileData, Queue<ItemData> itemData,
-            Queue<BlockData> blockData,
             WorldData worldData
     ) {
-        // blockData.forEach(data -> {
-        //     System.out.println("Block: " + data.blockState);
-        // });
         player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
             cap.setLivingEntityData(livingEntityData);
             cap.setProjectileData(projectileData);
             cap.setItemData(itemData);
             cap.setWorldData(worldData);
-            cap.setBlockData(blockData);
             cap.setDataIsEmpty(false);
         });
     }
 
     public static void removeRewindData(PlayerEntity player) {
         player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            cap.setLivingEntityData(null);
-            cap.setProjectileData(null);
-            cap.setItemData(null);
+            cap.setLivingEntityData(new LinkedList<>());
+            cap.setProjectileData(new LinkedList<>());
+            cap.setItemData(new LinkedList<>());
             cap.setWorldData(null);
-            cap.setBlockData(null);
+            cap.setBlockData(new LinkedList<>());
             cap.setDataIsEmpty(true);
+        });
+    }
+
+    public static void addBlockData(PlayerEntity player, BlockData blockData) {
+        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+            Queue<BlockData> newBlockData = cap.getBlockData();
+            newBlockData.add(blockData);
+            cap.setBlockData(newBlockData);
         });
     }
 

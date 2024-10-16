@@ -1,0 +1,16 @@
+{
+    "skins": {
+      "rotp_mandom:purple": {
+        "stand_type": "rotp_mandom:mandom",
+        "color" : "0x8a36f7"
+      },
+      "rotp_mandom:gray": {
+        "stand_type": "rotp_mandom:mandom",
+        "color" : "0x9c9c9c"
+      },
+      "rotp_mandom:acid": {
+        "stand_type": "rotp_mandom:mandom",
+        "color" : "0x5bb084"
+      }
+    }
+  }

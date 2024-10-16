@@ -79,7 +79,6 @@ public class MandomConfig {
     }
 
     public static class Common {
-        public final ForgeConfigSpec.BooleanValue BlockInteractWhileRewind;
         public final ForgeConfigSpec.IntValue RewindInChunks;
         public final ForgeConfigSpec.IntValue SaveInChunks;
         public final ForgeConfigSpec.IntValue MaxCastRingoClock;
@@ -107,11 +106,6 @@ public class MandomConfig {
             }
 
             builder.push("Global Settings");
-            BlockInteractWhileRewind = builder
-                    .translation("rotp_mandom.config.block_interact_while_rewind")
-                    .comment("    Blocking a interaction with blocks, entities and etc.",
-                            "    Defaults to true (because mandom dont have a block restore).")
-                    .define("BlockInteractWhileRewind", true);
             SaveInChunks = builder
                     .translation("rotp_mandom.config.point_chunks")
                     .comment("    Save all in * chunks.",
@@ -210,7 +204,6 @@ public class MandomConfig {
         }
 
         public static class SyncedValues {
-			private final boolean BlockInteractWhileRewind;
             private final int RewindInChunks;
             private final int SaveInChunks;
             private final int MaxCastRingoClock;
@@ -228,7 +221,6 @@ public class MandomConfig {
             private final boolean RewindDeadLivingEntities;
 
             public SyncedValues(PacketBuffer buf) {
-				BlockInteractWhileRewind = buf.readBoolean();
                 RewindInChunks = buf.readVarInt();
                 SaveInChunks = buf.readVarInt();
                 MaxCastRingoClock = buf.readVarInt();
@@ -247,7 +239,6 @@ public class MandomConfig {
             }
 
             private SyncedValues(Common config) {
-				BlockInteractWhileRewind = config.BlockInteractWhileRewind.get();
                 RewindInChunks = config.RewindInChunks.get();
                 SaveInChunks = config.SaveInChunks.get();
                 MaxCastRingoClock = config.MaxCastRingoClock.get();
@@ -266,7 +257,6 @@ public class MandomConfig {
             }
 
             public static void resetConfig() {
-				COMMON_SYNCED_TO_CLIENT.BlockInteractWhileRewind.clearCache();
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveInChunks.clearCache();
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.clearCache();
@@ -293,7 +283,6 @@ public class MandomConfig {
             }
 
             public void writeToBuf(PacketBuffer buf) {
-				buf.writeBoolean(BlockInteractWhileRewind);
                 buf.writeVarInt(RewindInChunks);
                 buf.writeVarInt(SaveInChunks);
                 buf.writeVarInt(MaxCastRingoClock);
@@ -312,7 +301,6 @@ public class MandomConfig {
             }
 
             public void changeConfigValues() {
-				COMMON_SYNCED_TO_CLIENT.BlockInteractWhileRewind.set(BlockInteractWhileRewind);
                 COMMON_SYNCED_TO_CLIENT.SaveInChunks.set(SaveInChunks);
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.set(RewindInChunks);
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.set(MaxCastRingoClock);

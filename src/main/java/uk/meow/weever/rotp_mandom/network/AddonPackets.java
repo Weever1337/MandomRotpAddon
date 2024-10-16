@@ -33,6 +33,7 @@ public class AddonPackets {
         registerMessage(channel, new TrSetDataIsEmptyPacket.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new TrResetDeathTimePacket.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWSetMandomShader.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        registerMessage(channel, new RWRemoveMandomShader.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWSetSelectedSlot.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 

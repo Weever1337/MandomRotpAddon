@@ -5,6 +5,7 @@ import com.github.standobyte.jojo.capability.world.TimeStopHandler;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityType;
 import com.github.standobyte.jojo.entity.stand.StandRelativeOffset;
+import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.github.standobyte.jojo.init.power.stand.ModStandsInit;
 import com.github.standobyte.jojo.network.PacketManager;
 import com.github.standobyte.jojo.network.packets.fromclient.ClClickActionPacket;
@@ -14,6 +15,7 @@ import uk.meow.weever.rotp_mandom.init.InitStands;
 import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
@@ -40,6 +42,9 @@ public class MandomEntity extends StandEntity {
         super.tick();
 
         LivingEntity user = getUser();
+        if (!level.isClientSide()) {
+            this.addEffect(new EffectInstance(ModStatusEffects.FULL_INVISIBILITY.get(), 20, 0, false, false));
+        }
 
         if (!(user instanceof PlayerEntity)) {
             return;
@@ -58,7 +63,7 @@ public class MandomEntity extends StandEntity {
             return;
         }
 
-        if (!TimeStopHandler.isTimeStopped(level, user.blockPosition()) && user.level.isClientSide()) {
+        if (!TimeStopHandler.isTimeStopped(level, user.blockPosition()) && level.isClientSide()) {
             ticks++;
             if (SEC == -1) {
                 SEC = TPARConfig.getSecond(level.isClientSide());

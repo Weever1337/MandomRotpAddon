@@ -1,8 +1,6 @@
 package uk.meow.weever.rotp_mandom.client.render.item;
 
 import com.github.standobyte.jojo.client.playeranim.PlayerAnimationHandler;
-import com.github.standobyte.jojo.client.render.entity.layerrenderer.IFirstPersonHandLayer;
-import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
@@ -16,9 +14,7 @@ import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.potion.Effects;
 import net.minecraft.util.Hand;
-import net.minecraft.util.HandSide;
 import net.minecraft.util.ResourceLocation;
 import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
