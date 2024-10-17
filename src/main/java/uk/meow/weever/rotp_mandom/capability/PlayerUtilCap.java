@@ -1,5 +1,6 @@
 package uk.meow.weever.rotp_mandom.capability;
 
+import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
@@ -11,16 +12,18 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 public class PlayerUtilCap {
     private final PlayerEntity player;
-
     private Queue<LivingEntityData> livingEntityData = new LinkedList<>();
     private Queue<ProjectileData> projectileData = new LinkedList<>();
     private Queue<ItemData> itemData = new LinkedList<>();
     private Queue<BlockData> blockData = new LinkedList<>();
+    private Set<ClientPlayerData> clientPlayerEntityData = new HashSet<>();
     private WorldData worldData = null;
 
     private boolean dataIsEmpty = true;
@@ -35,6 +38,14 @@ public class PlayerUtilCap {
 
     public void setLivingEntityData(Queue<LivingEntityData> livingEntityData) {
         this.livingEntityData = livingEntityData;
+    }
+
+    public Set<ClientPlayerData> getClientPlayerData() {
+        return clientPlayerEntityData;
+    }
+
+    public void setClientPlayerData(Set<ClientPlayerData> cData) {
+        this.clientPlayerEntityData = cData;
     }
 
     public boolean getDataIsEmpty() {

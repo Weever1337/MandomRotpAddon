@@ -3,14 +3,17 @@ package uk.meow.weever.rotp_mandom.util;
 import uk.meow.weever.rotp_mandom.capability.PlayerUtilCap;
 import uk.meow.weever.rotp_mandom.capability.PlayerUtilCapProvider;
 import net.minecraft.entity.player.PlayerEntity;
+import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 public class CapabilityUtil {
     public static boolean dataIsEmptyOrNot(PlayerEntity player) {
@@ -39,7 +42,16 @@ public class CapabilityUtil {
             cap.setItemData(new LinkedList<>());
             cap.setWorldData(null);
             cap.setBlockData(new LinkedList<>());
+            cap.setClientPlayerData(new HashSet<>());
             cap.setDataIsEmpty(true);
+        });
+    }
+
+    public static void addClientPlayerData(PlayerEntity player, ClientPlayerData clientPlayerData) {
+        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+            Set<ClientPlayerData> newClientPlayerDatas = cap.getClientPlayerData();
+            newClientPlayerDatas.add(clientPlayerData);
+            cap.setClientPlayerData(newClientPlayerDatas);            
         });
     }
 
@@ -53,6 +65,10 @@ public class CapabilityUtil {
 
     public static Queue<LivingEntityData> getLivingEntityData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getLivingEntityData).orElse(null);
+    }
+
+    public static Set<ClientPlayerData> getClientPlayerData(PlayerEntity player) {
+        return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getClientPlayerData).orElse(null);
     }
 
     public static Queue<ProjectileData> getProjectileData(PlayerEntity player) {

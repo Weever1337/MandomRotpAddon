@@ -24,7 +24,7 @@ public class InitStands {
 
     // ======================================== Mandom ========================================
     public static final RegistryObject<TimeRewind> TIME_REWIND = ACTIONS.register("time_rewind",
-            () -> new TimeRewind(new TimeRewind.Builder().autoSummonStand().standSound(InitSounds.REWIND_START)));
+            () -> new TimeRewind(new TimeRewind.Builder().autoSummonStand()));
 
     public static final EntityStandRegistryObject<EntityStandType<StandStats>, StandEntityType<MandomEntity>> STAND_MANDOM =
             new EntityStandRegistryObject<>("mandom",

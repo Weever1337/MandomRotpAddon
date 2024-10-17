@@ -51,7 +51,7 @@ public class TimeRewind extends StandEntityAction {
         PlayerEntity player = (PlayerEntity) userPower.getUser();
         if (!world.isClientSide()) {
             if (!CapabilityUtil.dataIsEmptyOrNot(player)) return;
-            world.playSound(null,userPower.getUser().blockPosition(), InitSounds.REWIND.get(), SoundCategory.PLAYERS,1,1);
+            world.playSound(null,userPower.getUser().blockPosition(), InitSounds.REWIND_START.get(), SoundCategory.PLAYERS,1,1);
             int RANGE = GlobalConfig.getTimePointChunks(world.isClientSide()) * 16;
             RewindSystem.saveData(player, RANGE);
             MandomEntity mandom = (MandomEntity) standEntity;

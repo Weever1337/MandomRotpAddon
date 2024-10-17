@@ -29,6 +29,9 @@ import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.config.*;
 import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
+import uk.meow.weever.rotp_mandom.network.AddonPackets;
+import uk.meow.weever.rotp_mandom.network.server.RWAddClientPlayerData;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,6 +54,9 @@ public class RewindSystem {
                 livingEntities.addAll(MCUtil.entitiesAround(LivingEntity.class, player, range, false, entity -> (!(entity instanceof ArmorStandEntity))));
                 livingEntities.add(player);
                 livingEntities.forEach(entity -> {
+                    if (entity instanceof PlayerEntity) {
+                        AddonPackets.sendToClient(new RWAddClientPlayerData(entity.getId(), player.getId()), player);
+                    }
                     livingEntitiesData.add(LivingEntityData.saveLivingEntityData(entity));
                 });
             }
@@ -76,6 +82,7 @@ public class RewindSystem {
     public static void rewindData(PlayerEntity player, int range) {
         if (!player.level.isClientSide()) {
             Queue<LivingEntityData> livingEntityData = CapabilityUtil.getLivingEntityData(player);
+            Set<ClientPlayerData> clientPlayerData = CapabilityUtil.getClientPlayerData(player);
             Queue<ProjectileData> projectileData = CapabilityUtil.getProjectileData(player);
             Queue<ItemData> itemData = CapabilityUtil.getItemData(player);
             Queue<BlockData> blockData = CapabilityUtil.getBlockData(player);
@@ -90,8 +97,16 @@ public class RewindSystem {
             entities.addAll(MCUtil.entitiesAround(Entity.class, player, range, false, filter -> !(filter instanceof ArmorStandEntity)));
             entities.add(player);
             entities.forEach(entity -> {
-                if (entity instanceof LivingEntity)
+                if (entity instanceof PlayerEntity) {   
+                    clientPlayerData.forEach(data -> {
+                        // if (data.player == (PlayerEntity) entity && !data.restored) {
+                            ClientPlayerData.rewindClientPlayerData(data);
+                        // }                    
+                    });
+                }
+                if (entity instanceof LivingEntity) {
                     rewindEntityData(livingEntityData, entity, entities);
+                }
                 if (entity instanceof ProjectileEntity)
                     rewindEntityData(projectileData, entity, entities);
                 if (entity instanceof ItemEntity)
@@ -243,7 +258,6 @@ public class RewindSystem {
 
         playersAround.forEach(playerAround -> {
             if (playerAround.distanceTo(player) <= range && !CapabilityUtil.dataIsEmptyOrNot(playerAround) && !BlockData.inData(CapabilityUtil.getBlockData(playerAround), blockState, blockPos)) {
-                System.out.println(playerAround.getName().getString());
                 CapabilityUtil.addBlockData(playerAround, blockData);
             }
         });

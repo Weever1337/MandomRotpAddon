@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
+import uk.meow.weever.rotp_mandom.network.server.RWSetCarriedItem;
 import uk.meow.weever.rotp_mandom.network.server.RWSetSelectedSlot;
 
 import java.util.HashMap;
@@ -30,6 +31,20 @@ public class InventorySaver {
             ItemStack itemStack = entry.getValue();
             player.inventory.setItem(slot, itemStack.copy());
         }
+    }
+
+    public static ItemStack saveCarriedItem(PlayerEntity player) {
+        if (player == null) return null;
+        // System.out.println(player.inventory.getCarried().getDisplayName().getString());
+        return player.inventory.getCarried();
+    }
+
+    public static void loadCarriedItem(PlayerEntity player, ItemStack itemStack) {
+        if (player == null) return;
+        // System.out.println(itemStack.getDisplayName().getString());
+
+        player.inventory.setCarried(itemStack);
+        AddonPackets.sendToClient(new RWSetCarriedItem(player.getId(), itemStack), player);
     }
 
     public static int saveSelectedSlot(PlayerEntity player) {

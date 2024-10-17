@@ -43,8 +43,12 @@ public class MandomEntity extends StandEntity {
 
         LivingEntity user = getUser();
         if (!level.isClientSide()) {
+            // System.out.println(((PlayerEntity)user).inventory.getCarried().getDisplayName().getString());
             this.addEffect(new EffectInstance(ModStatusEffects.FULL_INVISIBILITY.get(), 20, 0, false, false));
         }
+        // if (level.isClientSide()) {
+        //     System.out.println(((PlayerEntity)user).inventory.getCarried().getDisplayName().getString());
+        // }
 
         if (!(user instanceof PlayerEntity)) {
             return;

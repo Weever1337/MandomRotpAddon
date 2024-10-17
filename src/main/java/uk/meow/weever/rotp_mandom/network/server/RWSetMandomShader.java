@@ -1,15 +1,9 @@
 package uk.meow.weever.rotp_mandom.network.server;
 
 import com.github.standobyte.jojo.client.ClientUtil;
-import com.github.standobyte.jojo.client.render.world.shader.CustomShaderGroup;
 import com.github.standobyte.jojo.network.packets.IModPacketHandler;
-import com.github.standobyte.jojo.util.mc.reflection.ClientReflection;
-import com.google.gson.JsonSyntaxException;
-import java.io.IOException;
 import java.util.function.Supplier;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.shader.ShaderGroup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
@@ -43,19 +37,19 @@ public class RWSetMandomShader {
         public void handle(RWSetMandomShader msg, Supplier<NetworkEvent.Context> ctx) {
             Entity entity = ClientUtil.getEntityById(msg.entityId);
             if (entity instanceof PlayerEntity) {
-                Minecraft mc = Minecraft.getInstance();
+                // Minecraft mc = Minecraft.getInstance();
 
-                ShaderGroup effect;
-                try {
-                    effect = new CustomShaderGroup(mc.getTextureManager(), mc.getResourceManager(), mc.getMainRenderTarget(), msg.shaderRes);
-                    ClientReflection.setPostEffect(mc.gameRenderer, effect);
-                    effect.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
-                    ClientReflection.setEffectActive(mc.gameRenderer, true);
-                } catch (JsonSyntaxException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                // ShaderGroup effect;
+                // try {
+                //     effect = new CustomShaderGroup(mc.getTextureManager(), mc.getResourceManager(), mc.getMainRenderTarget(), msg.shaderRes);
+                //     ClientReflection.setPostEffect(mc.gameRenderer, effect);
+                //     effect.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
+                //     ClientReflection.setEffectActive(mc.gameRenderer, true);
+                // } catch (JsonSyntaxException e) {
+                //     e.printStackTrace();
+                // } catch (IOException e) {
+                //     e.printStackTrace();
+                // }
                 // RenderSystem.recordRenderCall(() -> {
                 //     ((GameRenderer)(Object)mc.gameRenderer).loadEffect(msg.shaderRes);
                 // });

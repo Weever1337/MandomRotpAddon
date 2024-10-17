@@ -4,10 +4,10 @@ import com.github.standobyte.jojo.power.impl.nonstand.INonStandPower;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.MCUtil;
 
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.vector.Vector3d;
@@ -37,9 +37,10 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
     private ExperienceData experienceData;
     private final StandPowerData standPowerData;
     private final NonPowerData nonPowerData;
+    private final LivingEntity target;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, int selectedSlot, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, int selectedSlot, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
@@ -49,13 +50,14 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
         this.inventory = inventory;
         this.enderChest = enderChest;
         this.armor = armor;
-        this.offhand = offhand;
+        this.offhand = offhand; 
         this.absorptionAmount = absorptionAmount;
         this.fallDistance = fallDistance;
         this.experienceData = experienceData;
         this.selectedSlot = selectedSlot;
         this.standPowerData = standPowerData;
         this.nonPowerData = nonPowerData;
+        this.target = target;
         this.restored = restored;
     }
 
@@ -80,11 +82,13 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
                 InventorySaver.loadPlayerInventory(player, livingEntityData.inventory);
                 InventorySaver.loadPlayerChestInventory(player, livingEntityData.enderChest);
                 InventorySaver.loadPlayerOffhand(player, livingEntityData.offhand);
-                if (player.inventory.selected != livingEntityData.selectedSlot) {
-                    InventorySaver.loadSelectedSlot(player, livingEntityData.selectedSlot);
-                }
+                InventorySaver.loadSelectedSlot(player, livingEntityData.selectedSlot);
             }
             ExperienceData.loadExperienceData(player, livingEntityData.experienceData);
+        }
+        if (entity instanceof MobEntity && ((MobEntity) entity).getTarget() != livingEntityData.target) {
+            MobEntity sigma = (MobEntity) entity;
+            sigma.setTarget(livingEntityData.target);
         }
         StandPowerData.loadData(entity, livingEntityData.standPowerData);
         NonPowerData.loadData(entity, livingEntityData.nonPowerData);
@@ -113,11 +117,13 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
                 InventorySaver.savePlayerEnderChestInventory(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerArmor(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerOffhand(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
+                // InventorySaver.saveCarriedItem(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.saveSelectedSlot(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 entity instanceof PlayerEntity ? ((PlayerEntity) entity).getFoodData().getFoodLevel() : 0,
                 entity.fallDistance,
                 entity instanceof PlayerEntity ? new ExperienceData(((PlayerEntity) entity).experienceLevel, ExperienceData.getExperiencePoints((PlayerEntity) entity)) : null,
-                standPowerData, nonPowerData, false);
+                standPowerData, nonPowerData, 
+                (entity instanceof MobEntity ? ((MobEntity) entity).getTarget() : null), false);
     }
 
     public static void rewindDeadLivingEntityData(LivingEntityData livingEntityData, World level) {
@@ -169,4 +175,16 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
         });
         return inData.get();
     }
+
+    // @Override
+    // public void rewindClientData(IEntityData<LivingEntityData, LivingEntity> data) {
+    //     LivingEntity entity = (LivingEntity) data.getEntity(data);
+    //     LivingEntityData livingEntityData = (LivingEntityData) data;
+    //     if (entity instanceof PlayerEntity) {
+    //         PlayerEntity player = (PlayerEntity) entity;
+    //         if (player.inventory.getCarried() != livingEntityData.carriedItem) {
+    //             InventorySaver.loadCarriedItem(player, livingEntityData.carriedItem);
+    //         }
+    //     }
+    // }
 }
