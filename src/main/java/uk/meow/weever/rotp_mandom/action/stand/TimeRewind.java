@@ -12,6 +12,7 @@ import com.github.standobyte.jojo.util.general.LazySupplier;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.IFormattableTextComponent;
@@ -73,7 +74,7 @@ public class TimeRewind extends StandEntityAction {
     public IFormattableTextComponent getTranslatedName(IStandPower power, String key) {
         IStandManifestation stand = power.getStandManifestation();
         if (!CapabilityUtil.dataIsEmptyOrNot((PlayerEntity) power.getUser())) {
-            if (RewindSystem.getRingoClock(power.getUser(), false)) {
+            if (RewindSystem.getRingoClock(power.getUser(), false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(power.getUser(), false, Hand.OFF_HAND)) {
                 int SEC = stand instanceof MandomEntity ? MandomEntity.getSEC() : 0;
                 if (SEC > 0) {
                     return new TranslationTextComponent(key + ".sec", SEC);

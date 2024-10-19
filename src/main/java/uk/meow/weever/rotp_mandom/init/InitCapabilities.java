@@ -24,18 +24,6 @@ public class InitCapabilities {
         }
     }
 
-    /*@SubscribeEvent
-    public static void onEntityTracking(PlayerEvent.StartTracking event) {
-        Entity entityTracked = event.getTarget();
-        ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-
-        if (entityTracked instanceof PlayerEntity) {
-            player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-                cap.onTracking(player);
-            });
-        }
-    }*/
-
     public static void registerCapabilities() {
         CapabilityManager.INSTANCE.register(PlayerUtilCap.class, new PlayerUtilCapStorage(), () -> new PlayerUtilCap(null));
     }

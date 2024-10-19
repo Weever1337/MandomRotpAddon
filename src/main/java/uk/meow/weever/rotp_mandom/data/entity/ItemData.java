@@ -3,9 +3,9 @@ package uk.meow.weever.rotp_mandom.data.entity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,13 +15,15 @@ public class ItemData implements IEntityData<ItemData, ItemEntity> {
     private final Vector3d position;
     private final ItemStack itemStack;
     private final Set<String> tags;
+    private CompoundNBT nbt;
     public boolean restored;
 
-    public ItemData(ItemEntity entity, Vector3d position, ItemStack itemStack, Set<String> tags, boolean restored) {
+    public ItemData(ItemEntity entity, Vector3d position, ItemStack itemStack, Set<String> tags, CompoundNBT nbt, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.itemStack = itemStack;
         this.tags = tags;
+        this.nbt = nbt;
         this.restored = restored;
     }
 
@@ -31,6 +33,7 @@ public class ItemData implements IEntityData<ItemData, ItemEntity> {
         entity.moveTo(itemData.position);
         entity.getTags().clear();
         entity.getTags().addAll(itemData.tags);
+        entity.getItem().deserializeNBT(itemData.nbt);
         itemData.restored = true;
     }
 
@@ -54,6 +57,7 @@ public class ItemData implements IEntityData<ItemData, ItemEntity> {
                 entity.position(),
                 entity.getItem(),
                 entity.getTags(),
+                entity.getItem().serializeNBT(),
                 false
         );
     }

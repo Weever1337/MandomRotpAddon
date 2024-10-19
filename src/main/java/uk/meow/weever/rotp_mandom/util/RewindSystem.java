@@ -3,6 +3,7 @@ package uk.meow.weever.rotp_mandom.util;
 import com.github.standobyte.jojo.util.mc.MCUtil;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
@@ -11,14 +12,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingDestroyBlockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;
+import net.minecraftforge.event.world.ExplosionEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import uk.meow.weever.rotp_mandom.data.entity.*;
@@ -121,32 +124,50 @@ public class RewindSystem {
         }
     }
 
-    private static void restoreBlocks(Queue<BlockData> blockData, World world) {
-        for (BlockData data : blockData) {
+    private static void restoreBlocks(Queue<BlockData> blockDataQueue, World world) {
+        Set<BlockPos> processedBlocks = new HashSet<>();
+    
+        for (BlockData data : blockDataQueue) {
             BlockPos pos = data.pos;
             BlockState savedState = data.blockState;
             BlockState currentState = world.getBlockState(pos);
             Map<Integer, ItemStack> inventory = data.inventory;
             BlockInfo blockInfo = data.blockInfo;
-            
-            if (blockInfo == BlockInfo.BREAKED) {
-                if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
-                    world.setBlockAndUpdate(pos, savedState);
-                    TileEntity tileEntity = world.getBlockEntity(pos);
-                    if (tileEntity != null && tileEntity instanceof IInventory) {
-                        BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, inventory);
+            if (processedBlocks.contains(pos) && !BlockData.inData(blockDataQueue, currentState, pos, blockInfo)) {
+                continue;
+            }
+
+            switch (blockInfo) {
+                case BREAKED:
+                    if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
+                        world.setBlockAndUpdate(pos, savedState);
+                        TileEntity tileEntity = world.getBlockEntity(pos);
+                        if (tileEntity instanceof IInventory) {
+                            BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, inventory);
+                        }
                     }
+                    processedBlocks.add(pos);
+                    break;
+    
+                case PLACED:
+                    if (!processedBlocks.contains(pos)) {
+                        world.removeBlock(pos, false);
+                        processedBlocks.add(pos);
+                    }
+                    break;
+    
+                case INTERACTED:
+                    if (!processedBlocks.contains(pos)) {
+                        TileEntity tileEntity = world.getBlockEntity(pos);
+                        if (tileEntity instanceof IInventory) {
+                            BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, inventory);
+                        }
+                        processedBlocks.add(pos);
+                    }
+                    break;
+                default:
+                    break;
                 }
-            }
-            if (blockInfo == BlockInfo.INTERACTED) {
-                TileEntity tileEntity = world.getBlockEntity(pos);
-                if (tileEntity != null && tileEntity instanceof IInventory) {
-                    BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, inventory);
-                }
-            }
-            if (blockInfo == BlockInfo.PLACED) {
-                world.removeBlock(pos, false);
-            }
         }
     }
 
@@ -181,19 +202,15 @@ public class RewindSystem {
             itemStack = entity.getOffhandItem();
         }
         if (itemStack.getItem() == InitItems.RINGO_CLOCK.get()) {
-            if (!itemStack.hasTag()) {
-                CompoundNBT nbt = new CompoundNBT();
-                itemStack.setTag(nbt);
-                nbt.putInt("cracked", 0);
-                return true;
-            } else {
-                int cracked = itemStack.getTag().getInt("cracked");
-                if (cracked < RingoClock.MAX_CAN_BE_CRACKED()) {
-                    if (damage) {
-                        itemStack.getTag().putInt("cracked", cracked + 1);
-                    }
-                    return true;
+            int cracked = itemStack.getTag().getInt("cracked");
+            if (cracked < RingoClock.MAX_CAN_BE_CRACKED()) {
+                if (damage) {
+                    itemStack.getTag().putInt("cracked", cracked + 1);
                 }
+                if (cracked >= RingoClock.MAX_CAN_BE_CRACKED()) {
+                    itemStack.shrink(1);
+                }
+                return true;
             }
         }    
         return false;
@@ -213,7 +230,7 @@ public class RewindSystem {
     }
 
     // !!!!!!!!!!! BLOCK RESTORE, W.I.P FEATURE !!!!!!!!!!!
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerInteractLeftClick(PlayerInteractEvent.LeftClickBlock event) {
         PlayerEntity player = event.getPlayer();
         BlockPos blockPos = event.getPos();
@@ -222,7 +239,7 @@ public class RewindSystem {
         onBlockSave(player, blockState, blockPos, BlockInfo.INTERACTED);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerInteractRightClick(PlayerInteractEvent.RightClickBlock event) {
         PlayerEntity player = event.getPlayer();
         BlockPos blockPos = event.getPos();
@@ -231,7 +248,7 @@ public class RewindSystem {
         onBlockSave(player, blockState, blockPos, BlockInfo.INTERACTED);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockDestroy(BreakEvent event) {
         PlayerEntity player = event.getPlayer();
         BlockPos blockPos = event.getPos();
@@ -240,7 +257,7 @@ public class RewindSystem {
         onBlockSave(player, blockState, blockPos, BlockInfo.BREAKED);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlaceBlock(EntityPlaceEvent event) {
         Entity entity = event.getEntity();
         BlockPos blockPos = event.getPos();
@@ -250,20 +267,55 @@ public class RewindSystem {
         PlayerEntity player = (PlayerEntity) entity;
         onBlockSave(player, blockState, blockPos, BlockInfo.PLACED);
     }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onBlockDestroyByEntities(LivingDestroyBlockEvent event) {
+        Entity entity = event.getEntity();
+        BlockPos blockPos = event.getPos();
+        BlockState blockState = event.getState();
+        if (!(entity instanceof LivingEntity) || blockPos.equals(BlockPos.ZERO)) return;
+
+        LivingEntity livingEntity = (LivingEntity) entity;
+        onBlockSave(livingEntity, blockState, blockPos, BlockInfo.BREAKED);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onExplosion(ExplosionEvent.Detonate event) {
+        for (BlockPos blockPos : event.getAffectedBlocks()) {
+            BlockState blockState = event.getWorld().getBlockState(blockPos);
+            if (blockState.getBlock() != Blocks.AIR) {
+                onBlockSave(event.getExplosion().getExploder(), blockState, blockPos, BlockInfo.BREAKED);
+            }
+        }
+    }
     
-    private static void onBlockSave(PlayerEntity player, BlockState blockState, BlockPos blockPos, BlockInfo blockInfo) {
-        BlockData blockData = BlockData.saveBlockData(player.level, blockState, blockPos, blockInfo);
-        int range = GlobalConfig.getTimeRewindChunks(player.level.isClientSide()) * 16;
-        List<PlayerEntity> playersAround = new ArrayList<>(MCUtil.entitiesAround(PlayerEntity.class, player, range, false, null));
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onEntityDestroyBlock(EntityPlaceEvent event) {
+        Entity entity = event.getEntity();
+        BlockPos blockPos = event.getPos();
+        BlockState blockState = event.getState();
+        if (!(entity instanceof LivingEntity) || blockPos.equals(BlockPos.ZERO)) return;
+
+        LivingEntity livingEntity = (LivingEntity) entity;
+        onBlockSave(livingEntity, blockState, blockPos, BlockInfo.PLACED);
+    }
+    
+    private static void onBlockSave(Entity entity, BlockState blockState, BlockPos blockPos, BlockInfo blockInfo) {
+        BlockData blockData = BlockData.saveBlockData(entity.level, blockState, blockPos, blockInfo);
+        int range = GlobalConfig.getTimeRewindChunks(entity.level.isClientSide()) * 16;
+        List<PlayerEntity> playersAround = new ArrayList<>(MCUtil.entitiesAround(PlayerEntity.class, entity, range, false, null));
+
+        if (entity instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) entity;
+            if (!CapabilityUtil.dataIsEmptyOrNot(player) && !BlockData.inData(CapabilityUtil.getBlockData(player), blockState, blockPos, blockInfo)) {
+                CapabilityUtil.addBlockData(player, blockData);
+            }
+        }
 
         playersAround.forEach(playerAround -> {
-            if (playerAround.distanceTo(player) <= range && !CapabilityUtil.dataIsEmptyOrNot(playerAround) && !BlockData.inData(CapabilityUtil.getBlockData(playerAround), blockState, blockPos)) {
+            if (playerAround != entity && playerAround.distanceTo(entity) <= range && !CapabilityUtil.dataIsEmptyOrNot(playerAround) && !BlockData.inData(CapabilityUtil.getBlockData(playerAround), blockState, blockPos, blockInfo)) {
                 CapabilityUtil.addBlockData(playerAround, blockData);
             }
         });
-
-        if (!CapabilityUtil.dataIsEmptyOrNot(player) && !BlockData.inData(CapabilityUtil.getBlockData(player), blockState, blockPos)) {
-            CapabilityUtil.addBlockData(player, blockData);
-        }
     }
 }

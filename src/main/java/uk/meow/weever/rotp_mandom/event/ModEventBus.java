@@ -19,10 +19,4 @@ public class ModEventBus {
                         (new ResourceLocation(MandomAddon.MOD_ID, "pillager_op"))
         );
     }
-
-
-//    @SubscribeEvent
-//    public static void registerItems(@Nonnull final RegistryEvent.Register<Item<?>> event) {
-//
-//    }
 }

@@ -3,7 +3,6 @@ package uk.meow.weever.rotp_mandom.action.stand;
 import com.github.standobyte.jojo.action.ActionConditionResult;
 import com.github.standobyte.jojo.action.ActionTarget;
 import com.github.standobyte.jojo.action.stand.StandEntityAction;
-import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
@@ -32,11 +31,11 @@ public class RestoreDataButInActionMoment extends StandEntityAction {
         super(builder);
     }
 
-    private ResourceLocation getShader(IStandPower power) {
-        ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
-                .getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
-        return texture;
-    }
+    // private ResourceLocation getShader(IStandPower power) {
+    //     ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
+    //             .getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
+    //     return texture;
+    // }
 
     @Override
     public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {

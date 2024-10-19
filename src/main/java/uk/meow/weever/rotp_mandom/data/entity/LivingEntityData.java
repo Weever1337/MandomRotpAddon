@@ -31,6 +31,7 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
     private final Map<Integer, ItemStack> enderChest;
     private final Map<Integer, ItemStack> armor;
     private final Map<Integer, ItemStack> offhand;
+    private final Map<Integer, ItemStack> craftingGrid;
     private final int selectedSlot;
     private float absorptionAmount;
     private float fallDistance;
@@ -40,7 +41,7 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
     private final LivingEntity target;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, int selectedSlot, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, Set<String> tags, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, Map<Integer, ItemStack> offhand, Map<Integer, ItemStack> craftingGrid, int selectedSlot, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
@@ -51,10 +52,11 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
         this.enderChest = enderChest;
         this.armor = armor;
         this.offhand = offhand; 
+        this.craftingGrid = craftingGrid;
+        this.selectedSlot = selectedSlot;
         this.absorptionAmount = absorptionAmount;
         this.fallDistance = fallDistance;
         this.experienceData = experienceData;
-        this.selectedSlot = selectedSlot;
         this.standPowerData = standPowerData;
         this.nonPowerData = nonPowerData;
         this.target = target;
@@ -83,6 +85,10 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
                 InventorySaver.loadPlayerChestInventory(player, livingEntityData.enderChest);
                 InventorySaver.loadPlayerOffhand(player, livingEntityData.offhand);
                 InventorySaver.loadSelectedSlot(player, livingEntityData.selectedSlot);
+                InventorySaver.loadCraftingGrid(player, livingEntityData.craftingGrid);
+                // if (ModList.get().isLoaded("sophisticatedbackpacks")) {
+                //     BackpackSaver.loadPlayerBackpacks(player, livingEntityData.backpacks);
+                // }
             }
             ExperienceData.loadExperienceData(player, livingEntityData.experienceData);
         }
@@ -106,6 +112,12 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
         if (nonPower != null && TPARConfig.getSaveNonPowerStats(entity.level.isClientSide())) {
             nonPowerData = new NonPowerData(nonPower, nonPower.getEnergy());
         }
+
+        // Map<Integer, CompoundNBT> savedBackpacks = null;
+        // if (ModList.get().isLoaded("sophisticatedbackpacks") && entity instanceof PlayerEntity) {
+        //     savedBackpacks = BackpackSaver.savePlayerBackpacks((PlayerEntity) entity);
+        // }
+        
         return new LivingEntityData(
                 entity,
                 entity.position(),
@@ -117,7 +129,7 @@ public class LivingEntityData implements IEntityData<LivingEntityData, LivingEnt
                 InventorySaver.savePlayerEnderChestInventory(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerArmor(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerOffhand(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
-                // InventorySaver.saveCarriedItem(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
+                InventorySaver.saveCraftingGrid(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.saveSelectedSlot(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 entity instanceof PlayerEntity ? ((PlayerEntity) entity).getFoodData().getFoodLevel() : 0,
                 entity.fallDistance,

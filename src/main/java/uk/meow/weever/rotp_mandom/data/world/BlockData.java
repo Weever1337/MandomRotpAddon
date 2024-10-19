@@ -3,7 +3,6 @@ package uk.meow.weever.rotp_mandom.data.world;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.inventory.IInventory;
@@ -26,14 +25,16 @@ public class BlockData {
         this.blockInfo = blockInfo;
     }
 
-    public static boolean inData(Queue<BlockData> blockData, BlockState blockState, BlockPos blockPos) {
-        AtomicBoolean inData = new AtomicBoolean(false);
-        blockData.forEach(data -> {
-            if (data.blockState == blockState && data.pos == blockPos) {
-                inData.set(true);
+    public static boolean inData(Queue<BlockData> blockDataQueue, BlockState blockState, BlockPos blockPos, BlockInfo newBlockInfo) {
+        for (BlockData data : blockDataQueue) {
+            if (data.pos.equals(blockPos) && data.blockState.equals(blockState)) {
+                if (newBlockInfo.ordinal() > data.blockInfo.ordinal()) {
+                    return false;
+                }
+                return true;
             }
-        });
-        return inData.get();
+        }
+        return false;
     }
 
     public static BlockData saveBlockData(World level, BlockState blockState, BlockPos blockPos, BlockInfo blockInfo) {

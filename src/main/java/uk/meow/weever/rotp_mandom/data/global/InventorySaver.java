@@ -1,6 +1,7 @@
 package uk.meow.weever.rotp_mandom.data.global;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
@@ -133,6 +134,31 @@ public class InventorySaver {
             ItemStack itemStack = entry.getValue();
             if (slot < offhandInventory.size()) {
                 offhandInventory.set(slot, itemStack.copy());
+            }
+        }
+    }
+    public static Map<Integer, ItemStack> saveCraftingGrid(PlayerEntity player) {
+        Map<Integer, ItemStack> craftingGridMap = new HashMap<>();
+        if (player == null) return craftingGridMap;
+
+        CraftingInventory craftingInventory = player.inventoryMenu.getCraftSlots();
+        for (int i = 0; i < craftingInventory.getContainerSize(); i++) {
+            ItemStack itemStack = craftingInventory.getItem(i);
+            craftingGridMap.put(i, itemStack.copy());
+        }
+
+        return craftingGridMap;
+    }
+
+    public static void loadCraftingGrid(PlayerEntity player, Map<Integer, ItemStack> savedCraftingGrid) {
+        if (player == null) return;
+
+        CraftingInventory craftingInventory = player.inventoryMenu.getCraftSlots();
+        for (Map.Entry<Integer, ItemStack> entry : savedCraftingGrid.entrySet()) {
+            int slot = entry.getKey();
+            ItemStack itemStack = entry.getValue();
+            if (slot < craftingInventory.getContainerSize()) {
+                craftingInventory.setItem(slot, itemStack.copy());
             }
         }
     }
