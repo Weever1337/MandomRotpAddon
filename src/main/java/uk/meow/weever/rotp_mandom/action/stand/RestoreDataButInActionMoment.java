@@ -7,7 +7,6 @@ import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 
-import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
 import uk.meow.weever.rotp_mandom.config.TPARConfig;
 import uk.meow.weever.rotp_mandom.entity.MandomEntity;
@@ -26,7 +25,7 @@ import uk.meow.weever.rotp_mandom.util.RewindSystem;
 import javax.annotation.Nullable;
 
 public class RestoreDataButInActionMoment extends StandEntityAction {
-    private static final ResourceLocation MANDOM_SHADER = new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom.json");
+    // private static final ResourceLocation MANDOM_SHADER = new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom.json");
     public RestoreDataButInActionMoment(Builder builder) {
         super(builder);
     }

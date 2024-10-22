@@ -10,9 +10,7 @@ import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -25,7 +23,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import uk.meow.weever.rotp_mandom.data.entity.*;
-import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
 import uk.meow.weever.rotp_mandom.data.world.*;
 import uk.meow.weever.rotp_mandom.data.world.BlockData.BlockInfo;
 import uk.meow.weever.rotp_mandom.MandomAddon;
@@ -102,9 +99,7 @@ public class RewindSystem {
             entities.forEach(entity -> {
                 if (entity instanceof PlayerEntity) {   
                     clientPlayerData.forEach(data -> {
-                        // if (data.player == (PlayerEntity) entity && !data.restored) {
-                            ClientPlayerData.rewindClientPlayerData(data);
-                        // }                    
+                        ClientPlayerData.rewindClientPlayerData(data);
                     });
                 }
                 if (entity instanceof LivingEntity) {
@@ -129,45 +124,12 @@ public class RewindSystem {
     
         for (BlockData data : blockDataQueue) {
             BlockPos pos = data.pos;
-            BlockState savedState = data.blockState;
             BlockState currentState = world.getBlockState(pos);
-            Map<Integer, ItemStack> inventory = data.inventory;
             BlockInfo blockInfo = data.blockInfo;
             if (processedBlocks.contains(pos) && !BlockData.inData(blockDataQueue, currentState, pos, blockInfo)) {
                 continue;
             }
-
-            switch (blockInfo) {
-                case BREAKED:
-                    if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
-                        world.setBlockAndUpdate(pos, savedState);
-                        TileEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity instanceof IInventory) {
-                            BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, inventory);
-                        }
-                    }
-                    processedBlocks.add(pos);
-                    break;
-    
-                case PLACED:
-                    if (!processedBlocks.contains(pos)) {
-                        world.removeBlock(pos, false);
-                        processedBlocks.add(pos);
-                    }
-                    break;
-    
-                case INTERACTED:
-                    if (!processedBlocks.contains(pos)) {
-                        TileEntity tileEntity = world.getBlockEntity(pos);
-                        if (tileEntity instanceof IInventory) {
-                            BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, inventory);
-                        }
-                        processedBlocks.add(pos);
-                    }
-                    break;
-                default:
-                    break;
-                }
+            BlockData.rewindBlockData(world, data, processedBlocks);
         }
     }
 
@@ -231,15 +193,6 @@ public class RewindSystem {
 
     // !!!!!!!!!!! BLOCK RESTORE, W.I.P FEATURE !!!!!!!!!!!
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onPlayerInteractLeftClick(PlayerInteractEvent.LeftClickBlock event) {
-        PlayerEntity player = event.getPlayer();
-        BlockPos blockPos = event.getPos();
-        if (player == null || blockPos == null) return;
-        BlockState blockState = player.level.getBlockState(blockPos);
-        onBlockSave(player, blockState, blockPos, BlockInfo.INTERACTED);
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerInteractRightClick(PlayerInteractEvent.RightClickBlock event) {
         PlayerEntity player = event.getPlayer();
         BlockPos blockPos = event.getPos();
@@ -258,28 +211,6 @@ public class RewindSystem {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onPlaceBlock(EntityPlaceEvent event) {
-        Entity entity = event.getEntity();
-        BlockPos blockPos = event.getPos();
-        BlockState blockState = event.getState();
-        if (!(entity instanceof PlayerEntity)) return;
-
-        PlayerEntity player = (PlayerEntity) entity;
-        onBlockSave(player, blockState, blockPos, BlockInfo.PLACED);
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onBlockDestroyByEntities(LivingDestroyBlockEvent event) {
-        Entity entity = event.getEntity();
-        BlockPos blockPos = event.getPos();
-        BlockState blockState = event.getState();
-        if (!(entity instanceof LivingEntity) || blockPos.equals(BlockPos.ZERO)) return;
-
-        LivingEntity livingEntity = (LivingEntity) entity;
-        onBlockSave(livingEntity, blockState, blockPos, BlockInfo.BREAKED);
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onExplosion(ExplosionEvent.Detonate event) {
         for (BlockPos blockPos : event.getAffectedBlocks()) {
             BlockState blockState = event.getWorld().getBlockState(blockPos);
@@ -287,17 +218,6 @@ public class RewindSystem {
                 onBlockSave(event.getExplosion().getExploder(), blockState, blockPos, BlockInfo.BREAKED);
             }
         }
-    }
-    
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onEntityDestroyBlock(EntityPlaceEvent event) {
-        Entity entity = event.getEntity();
-        BlockPos blockPos = event.getPos();
-        BlockState blockState = event.getState();
-        if (!(entity instanceof LivingEntity) || blockPos.equals(BlockPos.ZERO)) return;
-
-        LivingEntity livingEntity = (LivingEntity) entity;
-        onBlockSave(livingEntity, blockState, blockPos, BlockInfo.PLACED);
     }
     
     private static void onBlockSave(Entity entity, BlockState blockState, BlockPos blockPos, BlockInfo blockInfo) {

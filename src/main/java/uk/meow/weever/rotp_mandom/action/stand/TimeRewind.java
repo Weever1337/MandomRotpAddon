@@ -49,6 +49,7 @@ public class TimeRewind extends StandEntityAction {
 
     @Override
     public void standPerform(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
+        if (!(userPower.getUser() instanceof PlayerEntity)) return;
         PlayerEntity player = (PlayerEntity) userPower.getUser();
         if (!world.isClientSide()) {
             if (!CapabilityUtil.dataIsEmptyOrNot(player)) return;
