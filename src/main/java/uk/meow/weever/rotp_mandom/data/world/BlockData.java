@@ -1,11 +1,7 @@
 package uk.meow.weever.rotp_mandom.data.world;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-
 import net.minecraft.block.BlockState;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -14,6 +10,11 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class BlockData {
     public BlockPos pos;
@@ -82,10 +83,13 @@ public class BlockData {
                     processedBlocks.add(pos);
                 }
                 break;
-
             case PLACED:
                 if (!processedBlocks.contains(pos)) {
-                    world.removeBlock(pos, false);
+                    if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
+                        world.setBlock(pos, Fluids.EMPTY.defaultFluidState().createLegacyBlock(), 3);
+                    } else {
+                        world.removeBlock(pos, false);
+                    }
                     processedBlocks.add(pos);
                 }
                 break;
@@ -124,6 +128,7 @@ public class BlockData {
     }
 
     public static enum BlockInfo {
+        KNOW,
         BREAKED,
         PLACED,
         INTERACTED

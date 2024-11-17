@@ -9,7 +9,6 @@ import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.power.impl.stand.IStandManifestation;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.general.LazySupplier;
-
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Hand;
@@ -20,6 +19,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
+import uk.meow.weever.rotp_mandom.config.TPARConfig;
 import uk.meow.weever.rotp_mandom.entity.MandomEntity;
 import uk.meow.weever.rotp_mandom.init.InitSounds;
 import uk.meow.weever.rotp_mandom.init.InitStands;
@@ -58,6 +58,7 @@ public class TimeRewind extends StandEntityAction {
             RewindSystem.saveData(player, RANGE);
             MandomEntity mandom = (MandomEntity) standEntity;
             mandom.setSEC(-1);
+            userPower.setCooldownTimer(InitStands.TIME_REWIND.get(), TPARConfig.getSecond(world.isClientSide()) * 20 + 1);
         }
     }
 

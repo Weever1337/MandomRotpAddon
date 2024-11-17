@@ -121,10 +121,6 @@ processResources {
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.forkOptions.jvmArgs << "-Dnet.minecraftforge.gradle.check.certs=false"
-}
-
 jar.finalizedBy('reobfJar')
 
 publishing {
