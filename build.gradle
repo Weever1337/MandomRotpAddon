@@ -77,12 +77,12 @@ repositories {
         name "RotP Maven"
         url 'https://raw.githubusercontent.com/StandoByte/RotP-maven/main'
     }
-    // maven {
-    //     url "https://www.cursemaven.com"
-    //     content {
-    //         includeGroup "curse.maven"
-    //     }
-    // }
+     maven {
+         url "https://www.cursemaven.com"
+         content {
+             includeGroup "curse.maven"
+         }
+     }
 }
 
 dependencies {
@@ -107,11 +107,18 @@ jar {
     }
 }
 
+
+
 def resourceTargets = ['META-INF/mods.toml', 'pack.mcmeta']
 def replaceProperties = [
         mod_id           : mod_id, mod_name: mod_name, addon_version: addon_version,
         mod_authors      : mod_authors
 ]
+
+mixin {
+    add sourceSets.main, "rotp_mandom.mixins.refmap.json"
+    config "rotp_mandom.mixins.json"
+}
 
 processResources {
     inputs.properties replaceProperties

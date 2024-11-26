@@ -6,20 +6,18 @@ import com.github.standobyte.jojo.action.stand.StandEntityAction;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
 import com.github.standobyte.jojo.entity.stand.StandEntityTask;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
-
-import uk.meow.weever.rotp_mandom.config.GlobalConfig;
-import uk.meow.weever.rotp_mandom.config.TPARConfig;
-import uk.meow.weever.rotp_mandom.entity.MandomEntity;
-import uk.meow.weever.rotp_mandom.init.InitSounds;
-import uk.meow.weever.rotp_mandom.init.InitStands;
-import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
-
+import uk.meow.weever.rotp_mandom.config.GlobalConfig;
+import uk.meow.weever.rotp_mandom.config.TPARConfig;
+import uk.meow.weever.rotp_mandom.entity.MandomEntity;
+import uk.meow.weever.rotp_mandom.init.InitSounds;
+import uk.meow.weever.rotp_mandom.init.InitStands;
+import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
 import javax.annotation.Nullable;
@@ -38,7 +36,7 @@ public class RestoreDataButInActionMoment extends StandEntityAction {
 
     @Override
     public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {
-        return !CapabilityUtil.dataIsEmptyOrNot((PlayerEntity) user) ? ActionConditionResult.POSITIVE : ActionConditionResult.NEGATIVE;
+        return CapabilityUtil.dataIsEmptyOrNot((PlayerEntity) user) ? ActionConditionResult.NEGATIVE : ActionConditionResult.POSITIVE;
     }
 
     @Override
@@ -53,7 +51,7 @@ public class RestoreDataButInActionMoment extends StandEntityAction {
             RewindSystem.rewindData((PlayerEntity) user, RANGE * 16);
             RewindSystem.getRingoClock(user, true);
             if (TPARConfig.getCooldownForRewind(world.isClientSide())) {
-                if (TPARConfig.getCooldownSystem(world.isClientSide()) == uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem.OWN) {
+                if (TPARConfig.getCooldownSystem(world.isClientSide()) == RewindSystem.CooldownSystem.OWN) {
                     power.setCooldownTimer(InitStands.TIME_REWIND.get(), TPARConfig.getCooldownOwnTime(world.isClientSide()) * 20);
                 } else {
                     power.setCooldownTimer(InitStands.TIME_REWIND.get(), TPARConfig.getSecond(world.isClientSide()) * 20);

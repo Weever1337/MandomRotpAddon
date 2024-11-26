@@ -13,6 +13,7 @@ public class WorldData {
     }
 
     public static void rewindWorldData(WorldData worldData) {
+        if (worldData == null) return;
         ((ServerWorld) worldData.level).setDayTime(worldData.time);
     }
 

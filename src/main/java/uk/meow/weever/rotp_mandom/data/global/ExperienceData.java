@@ -13,7 +13,7 @@ public class ExperienceData {
     }
 
     public static int getExperiencePoints(PlayerEntity player) {
-        float f = (float)player.getXpNeededForNextLevel();
+        float f = (float) player.getXpNeededForNextLevel();
         return Math.round(player.experienceProgress * f);
     }
 

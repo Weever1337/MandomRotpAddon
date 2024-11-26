@@ -13,7 +13,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ProjectileData implements IEntityData<ProjectileData, ProjectileEntity> {
+public class ProjectileData {
     private final Vector3d position;
     private final Set<String> tags;
     private final boolean noPhysics;
@@ -34,14 +34,14 @@ public class ProjectileData implements IEntityData<ProjectileData, ProjectileEnt
         this.restored = restored;
     }
 
-    public static void rewindProjectileData(ProjectileData projectileData) {
+    public void rewindProjectileData(ProjectileData projectileData) {
         ProjectileEntity entity = projectileData.entity;
         entity.moveTo(
                 projectileData.position.x(),
                 projectileData.position.y(),
                 projectileData.position.z(),
-                projectileData.lookData.getLookVecX(),
-                projectileData.lookData.getLookVecY()
+                projectileData.lookData.lookVecX,
+                projectileData.lookData.lookVecY
         );
         entity.setDeltaMovement(projectileData.deltaMovement);
         entity.noPhysics = projectileData.noPhysics;
@@ -64,13 +64,10 @@ public class ProjectileData implements IEntityData<ProjectileData, ProjectileEnt
         );
     }
 
-    public static void rewindDeadProjectileEntityData(ProjectileData projectileData, World level) {
-        if (!TPARConfig.getRewindDeadLivingEntities(level.isClientSide()) || !(projectileData.entity instanceof ProjectileEntity)) return;
+    public void rewindDeadProjectileEntityData(ProjectileData projectileData, World level) {
+        if (!(projectileData.entity instanceof ProjectileEntity) || projectileData.restored) return;
     
         EntityType<?> entityType = projectileData.entity.getType();
-        if (entityType == null) {
-            return;
-        }
         ProjectileEntity newEntity = (ProjectileEntity) entityType.create(level);
         if (newEntity == null) {
             return;
@@ -79,38 +76,5 @@ public class ProjectileData implements IEntityData<ProjectileData, ProjectileEnt
         projectileData.entity = newEntity;
         level.addFreshEntity(newEntity);
         rewindProjectileData(projectileData);
-    }
-
-    @Override
-    public Entity getEntity(IEntityData<ProjectileData, ProjectileEntity> data) {
-        return ((ProjectileData)data).entity;
-    }
-
-    @Override
-    public void rewindData(IEntityData<ProjectileData, ProjectileEntity> data) {
-        if (((ProjectileData)data).restored) return;
-        rewindProjectileData(((ProjectileData)data));
-    }
-
-    @Override
-    public boolean isRestored(IEntityData<ProjectileData, ProjectileEntity> data) {
-        return ((ProjectileData)data).restored;
-    }
-
-    @Override
-    public void rewindDeadData(IEntityData<ProjectileData, ProjectileEntity> data, World level) {
-        if (((ProjectileData)data).restored) return;
-        rewindDeadProjectileEntityData(((ProjectileData)data), level);
-    }
-
-    @Override
-    public boolean inData(Queue<IEntityData<ProjectileData, ProjectileEntity>> projData, ProjectileEntity entity) {
-        AtomicBoolean inData = new AtomicBoolean(false);
-        projData.forEach(data -> {
-            if (data.getEntity(data) == entity) {
-                inData.set(true);
-            }
-        });
-        return inData.get();
     }
 }

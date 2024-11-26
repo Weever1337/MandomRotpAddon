@@ -1,6 +1,8 @@
 package uk.meow.weever.rotp_mandom.data.entity;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -10,7 +12,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ItemData implements IEntityData<ItemData, ItemEntity> {
+public class ItemData {
     public ItemEntity entity;
     private final Vector3d position;
     private final ItemStack itemStack;
@@ -27,7 +29,7 @@ public class ItemData implements IEntityData<ItemData, ItemEntity> {
         this.restored = restored;
     }
 
-    public static void rewindItemData(ItemData itemData) {
+    public void rewindItemData(ItemData itemData) {
         ItemEntity entity = itemData.entity;
         entity.setItem(itemData.itemStack);
         entity.moveTo(itemData.position);
@@ -37,18 +39,27 @@ public class ItemData implements IEntityData<ItemData, ItemEntity> {
         itemData.restored = true;
     }
 
-    public static void rewindDeadItemData(ItemData itemData, World level) {
+    public void rewindDeadItemData(ItemData itemData, World level) {
         if (itemData.restored) return;
-        ItemEntity newItemEntity = new ItemEntity(
+        ItemEntity newEntity = new ItemEntity(
                 level,
                 itemData.position.x(),
                 itemData.position.y(),
                 itemData.position.z(),
                 itemData.itemStack
         );
-        itemData.entity = newItemEntity;
+//        EntityType<?> entityType = itemData.entity.getType();
+//        ItemEntity newEntity = (ItemEntity) entityType.create(level);
+//
+//        System.out.println(newEntity == null);
+//        if (newEntity == null) {
+//            return;
+//        }
+
+        itemData.entity = newEntity;
+        level.addFreshEntity(newEntity);
         rewindItemData(itemData);
-        level.addFreshEntity(newItemEntity);
+        System.out.println("WHAAAAAT: " + newEntity.getName().getString());
     }
 
     public static ItemData saveItemData(ItemEntity entity) {
@@ -60,38 +71,5 @@ public class ItemData implements IEntityData<ItemData, ItemEntity> {
                 entity.getItem().serializeNBT(),
                 false
         );
-    }
-
-    @Override
-    public Entity getEntity(IEntityData<ItemData, ItemEntity> data) {
-        return ((ItemData)data).entity;
-    }
-
-    @Override
-    public void rewindData(IEntityData<ItemData, ItemEntity> data) {
-        if (((ItemData)data).restored) return;
-        rewindItemData(((ItemData)data));
-    }
-
-    @Override
-    public boolean isRestored(IEntityData<ItemData, ItemEntity> data) {
-        return ((ItemData)data).restored;
-    }
-
-    @Override
-    public void rewindDeadData(IEntityData<ItemData, ItemEntity> data, World level) {
-        if (((ItemData)data).restored) return;
-        rewindDeadItemData(((ItemData)data), level);
-    }
-
-    @Override
-    public boolean inData(Queue<IEntityData<ItemData, ItemEntity>> itemData, ItemEntity entity) {
-        AtomicBoolean inData = new AtomicBoolean(false);
-        itemData.forEach(data -> {
-            if (data.getEntity(data) == entity) {
-                inData.set(true);
-            }
-        });
-        return inData.get();
     }
 }

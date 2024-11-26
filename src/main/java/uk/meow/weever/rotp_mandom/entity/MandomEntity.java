@@ -9,13 +9,13 @@ import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.github.standobyte.jojo.init.power.stand.ModStandsInit;
 import com.github.standobyte.jojo.network.PacketManager;
 import com.github.standobyte.jojo.network.packets.fromclient.ClClickActionPacket;
-import uk.meow.weever.rotp_mandom.config.TPARConfig;
-import uk.meow.weever.rotp_mandom.init.InitStands;
-import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.world.World;
+import uk.meow.weever.rotp_mandom.config.TPARConfig;
+import uk.meow.weever.rotp_mandom.init.InitStands;
+import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
 
 public class MandomEntity extends StandEntity {
     private static int SEC = -1;
@@ -41,7 +41,7 @@ public class MandomEntity extends StandEntity {
 
         LivingEntity user = getUser();
         if (!level.isClientSide()) {
-            this.addEffect(new EffectInstance(ModStatusEffects.FULL_INVISIBILITY.get(), 20, 0, false, false));
+            this.addEffect(new EffectInstance(ModStatusEffects.FULL_INVISIBILITY.get(), 4, 2, false, false));
         }
 
         if (!(user instanceof PlayerEntity)) {

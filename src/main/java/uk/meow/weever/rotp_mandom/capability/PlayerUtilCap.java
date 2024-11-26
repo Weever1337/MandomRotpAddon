@@ -12,18 +12,17 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.List;
+import java.util.List;
 
 public class PlayerUtilCap {
     private final PlayerEntity player;
-    private Queue<LivingEntityData> livingEntityData = new LinkedList<>();
-    private Queue<ProjectileData> projectileData = new LinkedList<>();
-    private Queue<ItemData> itemData = new LinkedList<>();
-    private Queue<BlockData> blockData = new LinkedList<>();
-    private Set<ClientPlayerData> clientPlayerEntityData = new HashSet<>();
+    private List<LivingEntityData> livingEntityData = new LinkedList<>();
+    private List<ProjectileData> projectileData = new LinkedList<>();
+    private List<ItemData> itemData = new LinkedList<>();
+    private List<BlockData> blockData = new LinkedList<>();
+    private List<ClientPlayerData> clientPlayerEntityData = new LinkedList<>();
     private WorldData worldData = null;
 
     private boolean dataIsEmpty = true;
@@ -32,19 +31,19 @@ public class PlayerUtilCap {
         this.player = player;
     }
 
-    public Queue<LivingEntityData> getLivingEntityData() {
+    public List<LivingEntityData> getLivingEntityData() {
         return livingEntityData;
     }
 
-    public void setLivingEntityData(Queue<LivingEntityData> livingEntityData) {
+    public void setLivingEntityData(List<LivingEntityData> livingEntityData) {
         this.livingEntityData = livingEntityData;
     }
 
-    public Set<ClientPlayerData> getClientPlayerData() {
+    public List<ClientPlayerData> getClientPlayerData() {
         return clientPlayerEntityData;
     }
 
-    public void setClientPlayerData(Set<ClientPlayerData> cData) {
+    public void setClientPlayerData(List<ClientPlayerData> cData) {
         this.clientPlayerEntityData = cData;
     }
 
@@ -55,31 +54,31 @@ public class PlayerUtilCap {
     public void setDataIsEmpty(boolean dataIsEmpty) {
         this.dataIsEmpty = dataIsEmpty;
         if (!player.level.isClientSide()) {
-            AddonPackets.sendToClientsTrackingAndSelf(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
+            AddonPackets.sendToClientsTrackingAndSelf(new TrListDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
         }
     }
 
-    public Queue<ProjectileData> getProjectileData() {
+    public List<ProjectileData> getProjectileData() {
         return projectileData;
     }
 
-    public void setProjectileData(Queue<ProjectileData> projectileData) {
+    public void setProjectileData(List<ProjectileData> projectileData) {
         this.projectileData = projectileData;
     }
 
-    public Queue<ItemData> getItemData() {
+    public List<ItemData> getItemData() {
         return itemData;
     }
 
-    public void setItemData(Queue<ItemData> itemData) {
+    public void setItemData(List<ItemData> itemData) {
         this.itemData = itemData;
     }
 
-    public Queue<BlockData> getBlockData() {
+    public List<BlockData> getBlockData() {
         return blockData;
     }
 
-    public void setBlockData(Queue<BlockData> data) {
+    public void setBlockData(List<BlockData> data) {
         this.blockData = data;
     }
 
@@ -92,7 +91,7 @@ public class PlayerUtilCap {
     }
 
     public void syncWithAnyPlayer(ServerPlayerEntity player) {
-        AddonPackets.sendToClient(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
+        AddonPackets.sendToClient(new TrListDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
     }
 
     public CompoundNBT toNBT() {

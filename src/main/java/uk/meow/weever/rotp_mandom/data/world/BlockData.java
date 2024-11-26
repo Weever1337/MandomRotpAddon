@@ -6,9 +6,11 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.Property;
+import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
 
 import java.util.HashMap;
@@ -33,36 +35,26 @@ public class BlockData {
         this.blockInfo = blockInfo;
     }
 
-    public static boolean inData(Queue<BlockData> blockDataQueue, BlockState blockState, BlockPos blockPos, BlockInfo newBlockInfo) {
+    public static boolean inData(Queue<BlockData> blockDataQueue, BlockPos blockPos) {
         for (BlockData data : blockDataQueue) {
-            if (data.pos.equals(blockPos) && data.blockState.equals(blockState)) {
-                if (newBlockInfo.ordinal() > data.blockInfo.ordinal()) {
-                    return false;
-                }
+            if (data.pos.equals(blockPos)) {
                 return true;
             }
         }
         return false;
     }
 
-    public static BlockData saveBlockData(World level, BlockState blockState, BlockPos blockPos, BlockInfo blockInfo) {
-        Map<Integer, ItemStack> inventory = new HashMap<>();
-        CompoundNBT nbt = null;
+    public static BlockData saveBlockData(BlockState blockState, BlockPos blockPos, BlockInfo blockInfo, TransferBlockData transferBlockData) {
+        Map<Integer, ItemStack> inventory = transferBlockData.inventory;
+        CompoundNBT nbt = transferBlockData.nbt;
         Map<String, Comparable<?>> properties = new HashMap<>();
 
         for (Property<?> property : blockState.getProperties()) {
             properties.put(property.getName(), blockState.getValue(property));
         }
 
-        TileEntity tileEntity = level.getBlockEntity(blockPos);
-        if (tileEntity != null) {
-            if (tileEntity instanceof IInventory) {
-                inventory = BlockInventorySaver.saveBlockInventory((IInventory) tileEntity);
-            }
-            nbt = tileEntity.serializeNBT();
-        }
         return new BlockData(
-            blockPos, blockState, 
+            blockPos, blockState,
             inventory,
             nbt,
             properties,
@@ -75,34 +67,22 @@ public class BlockData {
         BlockState savedState = data.blockState;
         BlockState currentState = world.getBlockState(pos);
         BlockInfo blockInfo = data.blockInfo;
-        
+
         switch (blockInfo) {
             case BREAKED:
-                if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
-                    rewindBlock(world, data);
-                    processedBlocks.add(pos);
-                }
+                rewindBlock(world, data);
                 break;
             case PLACED:
-                if (!processedBlocks.contains(pos)) {
-                    if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
-                        world.setBlock(pos, Fluids.EMPTY.defaultFluidState().createLegacyBlock(), 3);
-                    } else {
-                        world.removeBlock(pos, false);
-                    }
-                    processedBlocks.add(pos);
-                }
-                break;
-
-            case INTERACTED:
-                if (!processedBlocks.contains(pos)) {
-                    rewindBlock(world, data);
-                    processedBlocks.add(pos);
+                if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
+                    world.setBlock(pos, Fluids.EMPTY.defaultFluidState().createLegacyBlock(), 3);
+                } else {
+                    world.removeBlock(pos, false);
                 }
                 break;
             default:
                 break;
             }
+        processedBlocks.add(pos);
     }
 
     public static void rewindBlock(World world, BlockData data) {
@@ -115,9 +95,9 @@ public class BlockData {
         world.setBlockAndUpdate(data.pos, data.blockState);
         TileEntity tileEntity = world.getBlockEntity(data.pos);
         if (tileEntity != null) {
-            tileEntity.deserializeNBT(data.nbt);
+            tileEntity.deserializeNBT(data.blockState, data.nbt);
             if (tileEntity instanceof IInventory) {
-                BlockInventorySaver.loadBlockInventory((IInventory) tileEntity, data.inventory);
+                BlockInventorySaver.loadBlockInventory(tileEntity, data.inventory);
             }
         }
     }
@@ -127,10 +107,22 @@ public class BlockData {
         return state.setValue(property, (T) value);
     }
 
-    public static enum BlockInfo {
-        KNOW,
+    public enum BlockInfo {
         BREAKED,
-        PLACED,
-        INTERACTED
+        PLACED
+    }
+
+    public static class TransferBlockData {
+        public final BlockState blockState;
+        @Nullable
+        public final Map<Integer, ItemStack> inventory;
+        @Nullable
+        public final CompoundNBT nbt;
+
+        public TransferBlockData(BlockState blockState, @Nullable Map<Integer, ItemStack> inventory, @Nullable CompoundNBT nbt) {
+            this.blockState = blockState;
+            this.inventory = inventory;
+            this.nbt = nbt;
+        }
     }
 }

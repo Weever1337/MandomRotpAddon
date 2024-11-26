@@ -26,6 +26,7 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
     private static final Map<PlayerRenderer, RingoLayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> RENDERER_LAYERS = new HashMap<>();
     private static final ResourceLocation TEXTURE = new ResourceLocation(MandomAddon.MOD_ID, "textures/item/ringo_layer.png");
     private final M ringoModel;
+    private boolean triedToRender = false;
 
     public RingoLayerRenderer(IEntityRenderer<T, M> renderer, M mmm) {
         super(renderer);
@@ -39,17 +40,24 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
     @Override
     public void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, T entity,
                        float limbSwing, float limbSwingAmount, float partialTick, float ticks, float yRot, float xRot) {
-        boolean isRingo = RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND);
-        if (!isRingo) {
-            return;
+        if (triedToRender) return;
+        try {
+            boolean isRingo = RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND);
+            if (!isRingo) {
+                return;
+            }
+            M playerModel = getParentModel();
+            ringoModel.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
+            playerModel.copyPropertiesTo(ringoModel);
+            ringoModel.setupAnim(entity, limbSwing, limbSwingAmount, ticks, yRot, xRot);
+            ((RingoLayerModel<?>) ringoModel).setupClockPosition(entity, RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND), RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND));
+            IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(TEXTURE), false, false);
+            ringoModel.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+            triedToRender = false;
+        } catch (Exception exception) {
+            triedToRender = true;
+            MandomAddon.LOGGER.error("Have a problem with some render mod? maybe arclight, quark?");
         }
-        M playerModel = getParentModel();
-        ringoModel.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
-        playerModel.copyPropertiesTo(ringoModel);
-        ringoModel.setupAnim(entity, limbSwing, limbSwingAmount, ticks, yRot, xRot);
-        ((RingoLayerModel) ringoModel).setupClockPosition(entity, RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND), RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND));
-        IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(TEXTURE), false, false);
-        ringoModel.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 
     // @Override
