@@ -13,10 +13,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 public class BlockData {
     public BlockPos pos;
@@ -35,7 +32,7 @@ public class BlockData {
         this.blockInfo = blockInfo;
     }
 
-    public static boolean inData(Queue<BlockData> blockDataQueue, BlockPos blockPos) {
+    public static boolean inData(List<BlockData> blockDataQueue, BlockPos blockPos) {
         for (BlockData data : blockDataQueue) {
             if (data.pos.equals(blockPos)) {
                 return true;
@@ -62,7 +59,7 @@ public class BlockData {
         );
     }
 
-    public static void rewindBlockData(World world, BlockData data, Set<BlockPos> processedBlocks) {
+    public static void rewindBlockData(World world, BlockData data, List<BlockPos> processedBlocks) {
         BlockPos pos = data.pos;
         BlockState savedState = data.blockState;
         BlockState currentState = world.getBlockState(pos);

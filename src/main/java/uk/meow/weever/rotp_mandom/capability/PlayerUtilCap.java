@@ -54,7 +54,7 @@ public class PlayerUtilCap {
     public void setDataIsEmpty(boolean dataIsEmpty) {
         this.dataIsEmpty = dataIsEmpty;
         if (!player.level.isClientSide()) {
-            AddonPackets.sendToClientsTrackingAndSelf(new TrListDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
+            AddonPackets.sendToClientsTrackingAndSelf(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
         }
     }
 
@@ -91,7 +91,7 @@ public class PlayerUtilCap {
     }
 
     public void syncWithAnyPlayer(ServerPlayerEntity player) {
-        AddonPackets.sendToClient(new TrListDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
+        AddonPackets.sendToClient(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
     }
 
     public CompoundNBT toNBT() {

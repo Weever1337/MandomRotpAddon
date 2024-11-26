@@ -101,7 +101,7 @@ public class RewindSystem {
 
     private static void restoreBlocks(List<BlockData> blockDataList, World world) {
         if (blockDataList == null || world == null) return;
-        List<BlockPos> processedBlocks = new HashList<>();
+        List<BlockPos> processedBlocks = new ArrayList<>();
         List<BlockData> toRestore = new ArrayList<>(blockDataList);
 
         for (BlockData data : toRestore) {
