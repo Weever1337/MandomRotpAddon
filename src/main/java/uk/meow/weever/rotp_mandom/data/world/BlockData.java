@@ -79,7 +79,6 @@ public class BlockData {
             default:
                 break;
             }
-        processedBlocks.add(pos);
     }
 
     public static void rewindBlock(World world, BlockData data) {

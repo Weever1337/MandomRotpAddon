@@ -3,7 +3,6 @@ package uk.meow.weever.rotp_mandom.data.entity;
 import com.github.standobyte.jojo.power.impl.nonstand.INonStandPower;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.MCUtil;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
@@ -13,13 +12,12 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-import uk.meow.weever.rotp_mandom.config.TPARConfig;
+import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.global.*;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.TrResetDeathTimePacket;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LivingEntityData {
     public LivingEntity entity;
@@ -131,11 +129,11 @@ public class LivingEntityData {
         INonStandPower nonPower = INonStandPower.getNonStandPowerOptional(entity).orElse(null);
         NonPowerData nonPowerData = null;
 
-        if (stand != null && TPARConfig.getSaveStandStats(entity.level.isClientSide())) {
+        if (stand != null && RewindConfig.getSaveStandStats(entity.level.isClientSide())) {
             standPowerData = new StandPowerData(stand, stand.isActive());
         }
 
-        if (nonPower != null && TPARConfig.getSaveNonPowerStats(entity.level.isClientSide())) {
+        if (nonPower != null && RewindConfig.getSaveNonPowerStats(entity.level.isClientSide())) {
             nonPowerData = new NonPowerData(nonPower, nonPower.getEnergy());
         }
         

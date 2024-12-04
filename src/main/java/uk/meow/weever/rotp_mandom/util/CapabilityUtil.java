@@ -1,8 +1,9 @@
 package uk.meow.weever.rotp_mandom.util;
 
+import net.minecraft.entity.player.PlayerEntity;
 import uk.meow.weever.rotp_mandom.capability.PlayerUtilCap;
 import uk.meow.weever.rotp_mandom.capability.PlayerUtilCapProvider;
-import net.minecraft.entity.player.PlayerEntity;
+import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
@@ -10,77 +11,87 @@ import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class CapabilityUtil {
+    @Deprecated
     public static boolean dataIsEmptyOrNot(PlayerEntity player) {
-        return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getDataIsEmpty).orElse(true);
-    }
-
-    public static void saveRewindData(
-            PlayerEntity player,
-            List<LivingEntityData> livingEntityData,
-            List<ProjectileData> projectileData, List<ItemData> itemData,
-            WorldData worldData
-    ) {
-        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            cap.setLivingEntityData(livingEntityData);
-            cap.setProjectileData(projectileData);
-            cap.setItemData(itemData);
-            cap.setWorldData(worldData);
-            cap.setDataIsEmpty(false);
-        });
+        return false;
     }
 
     public static void removeRewindData(PlayerEntity player) {
+        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(PlayerUtilCap::clear);
+    }
+
+    public static void addLivingEntityData(PlayerEntity player, List<LivingEntityData> livingEntityData) {
         player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            cap.setLivingEntityData(new LinkedList<>());
-            cap.setProjectileData(new LinkedList<>());
-            cap.setItemData(new LinkedList<>());
-            cap.setWorldData(null);
-            cap.setBlockData(new LinkedList<>());
-            cap.setClientPlayerData(new LinkedList<>());
-            cap.setDataIsEmpty(true);
+            int maxSeconds = RewindConfig.getSecond(player.level.isClientSide());
+            cap.addLivingEntityData(livingEntityData, maxSeconds);
+        });
+    }
+
+    public static void addProjectileEntityData(PlayerEntity player, List<ProjectileData> projectileData) {
+        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+            int maxSeconds = RewindConfig.getSecond(player.level.isClientSide());
+            cap.addProjectileData(projectileData, maxSeconds);
+        });
+    }
+
+    public static void addItemEntityData(PlayerEntity player, List<ItemData> itemData) {
+        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+            int maxSeconds = RewindConfig.getSecond(player.level.isClientSide());
+            cap.addItemData(itemData, maxSeconds);
         });
     }
 
     public static void addClientPlayerData(PlayerEntity player, ClientPlayerData clientPlayerData) {
         player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            List<ClientPlayerData> newClientPlayerDatas = cap.getClientPlayerData();
-            newClientPlayerDatas.add(clientPlayerData);
-            cap.setClientPlayerData(newClientPlayerDatas);            
+            int maxSeconds = RewindConfig.getSecond(player.level.isClientSide());
+            List<ClientPlayerData> list = new ArrayList<>();
+            list.add(clientPlayerData);
+            cap.addClientPlayerData(list, maxSeconds);
         });
     }
 
-    public static void addBlockData(PlayerEntity player, BlockData blockData) {
+    public static void addBlockData(PlayerEntity player, List<BlockData> blockData) {
+        if (blockData == null || blockData.isEmpty()) return;
+
         player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            List<BlockData> newBlockData = cap.getBlockData();
-            newBlockData.add(blockData);
-            cap.setBlockData(newBlockData);
+            int maxSeconds = RewindConfig.getSecond(player.level.isClientSide());
+            cap.addBlockData(blockData, maxSeconds);
         });
     }
 
-    public static List<LivingEntityData> getLivingEntityData(PlayerEntity player) {
+    public static void addWorldData(PlayerEntity player, WorldData worldData) {
+        player.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+            int maxSeconds = RewindConfig.getSecond(player.level.isClientSide());
+            cap.addWorldData(worldData, maxSeconds);
+        });
+    }
+
+    public static LinkedList<List<LivingEntityData>> getLivingEntityData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getLivingEntityData).orElse(null);
     }
 
-    public static List<ClientPlayerData> getClientPlayerData(PlayerEntity player) {
+    public static LinkedList<List<ClientPlayerData>> getClientPlayerData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getClientPlayerData).orElse(null);
     }
 
-    public static List<ProjectileData> getProjectileData(PlayerEntity player) {
+    public static LinkedList<List<ProjectileData>> getProjectileData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getProjectileData).orElse(null);
     }
 
-    public static List<ItemData> getItemData(PlayerEntity player) {
+    public static LinkedList<List<ItemData>> getItemData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getItemData).orElse(null);
     }
 
-    public static WorldData getWorldData(PlayerEntity player) {
+    public static LinkedList<WorldData> getWorldData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getWorldData).orElse(null);
     }
 
-    public static List<BlockData> getBlockData(PlayerEntity player) {
+    public static LinkedList<List<BlockData>> getBlockData(PlayerEntity player) {
         return player.getCapability(PlayerUtilCapProvider.CAPABILITY).map(PlayerUtilCap::getBlockData).orElse(null);
     }
 }

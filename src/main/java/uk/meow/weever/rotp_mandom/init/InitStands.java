@@ -7,12 +7,12 @@ import com.github.standobyte.jojo.power.impl.stand.stats.StandStats;
 import com.github.standobyte.jojo.power.impl.stand.type.EntityStandType;
 import com.github.standobyte.jojo.power.impl.stand.type.StandType;
 import com.github.standobyte.jojo.util.mod.StoryPart;
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
 import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.action.stand.RestoreDataButInActionMoment;
 import uk.meow.weever.rotp_mandom.action.stand.TimeRewind;
 import uk.meow.weever.rotp_mandom.entity.MandomEntity;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
 
 public class InitStands {
     @SuppressWarnings("unchecked")
@@ -24,9 +24,9 @@ public class InitStands {
 
     // ======================================== Mandom ========================================
     public static final RegistryObject<TimeRewind> TIME_REWIND = ACTIONS.register("time_rewind",
-            () -> new TimeRewind(new TimeRewind.Builder().autoSummonStand()));
+            () -> new TimeRewind(new TimeRewind.Builder().autoSummonStand().ignoresPerformerStun()));
 
-    public static final EntityStandRegistryObject<EntityStandType<StandStats>, StandEntityType<MandomEntity>> STAND_MANDOM =
+    public static final EntityStandRegistryObject<EntityStandType<StandStats>, StandEntityType<MandomEntity>> MANDOM =
             new EntityStandRegistryObject<>("mandom",
                     STANDS,
                     () -> new EntityStandType.Builder<>()

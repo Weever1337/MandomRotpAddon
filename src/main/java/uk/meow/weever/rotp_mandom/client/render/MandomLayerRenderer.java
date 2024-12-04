@@ -1,14 +1,11 @@
 package uk.meow.weever.rotp_mandom.client.render;
 
 import com.github.standobyte.jojo.client.ClientUtil;
-import com.github.standobyte.jojo.client.playeranim.PlayerAnimationHandler;
 import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.power.impl.stand.type.StandType;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import uk.meow.weever.rotp_mandom.MandomAddon;
-import uk.meow.weever.rotp_mandom.init.InitStands;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.ItemRenderer;
@@ -21,6 +18,8 @@ import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
+import uk.meow.weever.rotp_mandom.MandomAddon;
+import uk.meow.weever.rotp_mandom.init.InitStands;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +43,7 @@ public class MandomLayerRenderer<T extends LivingEntity, M extends BipedModel<T>
             return;
         }
         IStandPower.getStandPowerOptional(entity).ifPresent((stand) -> {
-            StandType<?> mandom = InitStands.STAND_MANDOM.getStandType();
+            StandType<?> mandom = InitStands.MANDOM.getStandType();
             if (stand.getType() == mandom && stand.isActive()) {
                 M playerModel = getParentModel();
                 mandomArchive.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);

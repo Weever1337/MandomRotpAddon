@@ -1,6 +1,9 @@
 package uk.meow.weever.rotp_mandom.client.render.item;
 
+import com.github.standobyte.jojo.client.ClientUtil;
 import com.github.standobyte.jojo.client.playeranim.PlayerAnimationHandler;
+import com.github.standobyte.jojo.client.render.entity.layerrenderer.IFirstPersonHandLayer;
+import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
@@ -12,9 +15,12 @@ import net.minecraft.client.renderer.entity.PlayerRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.Hand;
+import net.minecraft.util.HandSide;
 import net.minecraft.util.ResourceLocation;
 import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
@@ -22,7 +28,7 @@ import uk.meow.weever.rotp_mandom.util.RewindSystem;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>> extends LayerRenderer<T, M> {
+public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>> extends LayerRenderer<T, M> implements IFirstPersonHandLayer {
     private static final Map<PlayerRenderer, RingoLayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> RENDERER_LAYERS = new HashMap<>();
     private static final ResourceLocation TEXTURE = new ResourceLocation(MandomAddon.MOD_ID, "textures/item/ringo_layer.png");
     private final M ringoModel;
@@ -41,6 +47,7 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
     public void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, T entity,
                        float limbSwing, float limbSwingAmount, float partialTick, float ticks, float yRot, float xRot) {
         if (triedToRender) return;
+
         try {
             boolean isRingo = RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND);
             if (!isRingo) {
@@ -53,23 +60,30 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
             ((RingoLayerModel<?>) ringoModel).setupClockPosition(entity, RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND), RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND));
             IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(TEXTURE), false, false);
             ringoModel.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
-            triedToRender = false;
-        } catch (Exception exception) {
+        } catch (NullPointerException exception) {
             triedToRender = true;
-            MandomAddon.LOGGER.error("Have a problem with some render mod? maybe arclight, quark?");
+            MandomAddon.LOGGER.error("CANT RENDER A CLOCKS");
         }
     }
 
-    // @Override
-    // public void renderHandFirstPerson(HandSide side, MatrixStack matrixStack, IRenderTypeBuffer buffer, int light,
-    //         AbstractClientPlayerEntity player, PlayerRenderer playerRenderer) {
-    //     if (!(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
-    //         boolean isRingo = RewindSystem.getRingoClock(player, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(player, false, Hand.OFF_HAND);
-    //         if (!isRingo) {
-    //             return;
-    //         }
-    //         PlayerModel<AbstractClientPlayerEntity> model = (PlayerModel<AbstractClientPlayerEntity>) ringoModel;
-    //         IFirstPersonHandLayer.defaultRender(side, matrixStack, buffer, light, player, playerRenderer, model, TEXTURE); // FIXME короче рандомно пропадают некоторые части от часов, фикситься через ф5, я не ебу как это лол
-    //     }
-    // }
+     @Override
+     public void renderHandFirstPerson(HandSide side, MatrixStack matrixStack, IRenderTypeBuffer buffer, int light,
+             AbstractClientPlayerEntity player, PlayerRenderer playerRenderer) {
+         if (!(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
+             boolean isRingo = RewindSystem.getRingoClock(player, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(player, false, Hand.OFF_HAND);
+             if (!isRingo) {
+                 return;
+             }
+             PlayerModel<AbstractClientPlayerEntity> model = (PlayerModel<AbstractClientPlayerEntity>) ringoModel;
+             ClientUtil.setupForFirstPersonRender(model, player);
+             IVertexBuilder vertexBuilder = buffer.getBuffer(RenderType.entityTranslucent(TEXTURE));
+             ModelRenderer arm = ClientUtil.getArm(model, side);
+             ModelRenderer armOuter = ClientUtil.getArmOuter(model, side);
+             arm.xRot = 0.0F;
+             arm.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
+             armOuter.xRot = 0.0F;
+             armOuter.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
+//             IFirstPersonHandLayer.defaultRender(side, matrixStack, buffer, light, player, playerRenderer, model, TEXTURE); // FIXME короче рандомно пропадают некоторые части от часов, фикситься через ф5, я не ебу как это лол
+         }
+     }
 }

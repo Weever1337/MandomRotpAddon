@@ -39,10 +39,9 @@ public class ClientEventHandler {
     }
 
     private boolean modPostedEvent = false;
-    @SuppressWarnings("resource")
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderHand(RenderHandEvent event) {
-        ClientPlayerEntity player = Minecraft.getInstance().player;
+        ClientPlayerEntity player = mc.player;
         if (!event.isCanceled() && !modPostedEvent && !(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
             ItemStack stack = player.getItemInHand(event.getHand());
             if (event.getHand() == Hand.MAIN_HAND && !stack.isEmpty() && stack.getItem() instanceof RingoClock) {

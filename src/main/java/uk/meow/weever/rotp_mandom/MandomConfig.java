@@ -81,7 +81,7 @@ public class MandomConfig {
 
     public static class Common {
         public final ForgeConfigSpec.IntValue RewindInChunks;
-        public final ForgeConfigSpec.IntValue SaveInChunks;
+        //        public final ForgeConfigSpec.IntValue SaveInChunks;
         public final ForgeConfigSpec.IntValue MaxCastRingoClock;
         public final ForgeConfigSpec.BooleanValue CooldownForRewind;
         public final ForgeConfigSpec.EnumValue<RewindSystem.CooldownSystem> CooldownSystem;
@@ -102,12 +102,12 @@ public class MandomConfig {
             }
 
             builder.push("Global Settings");
-            SaveInChunks = builder
-                    .translation("rotp_mandom.config.point_chunks")
-                    .comment("    Save all in * chunks.",
-                            "    Defaults to 10."
-                    )
-                    .defineInRange("SaveInChunks", 10, 1, Integer.MAX_VALUE);
+//            SaveInChunks = builder
+//                    .translation("rotp_mandom.config.point_chunks")
+//                    .comment("    Save all in * chunks.",
+//                            "    Defaults to 10."
+//                    )
+//                    .defineInRange("SaveInChunks", 10, 1, Integer.MAX_VALUE);
             RewindInChunks = builder
                     .translation("rotp_mandom.config.rewind_chunks")
                     .comment("    Rewind all in * chunks.",
@@ -201,7 +201,7 @@ public class MandomConfig {
 
         public static class SyncedValues {
             private final int RewindInChunks;
-            private final int SaveInChunks;
+            //            private final int SaveInChunks;
             private final int MaxCastRingoClock;
             private final boolean CooldownForRewind;
             private final uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem CooldownSystem;
@@ -218,10 +218,10 @@ public class MandomConfig {
 
             public SyncedValues(PacketBuffer buf) {
                 RewindInChunks = buf.readVarInt();
-                SaveInChunks = buf.readVarInt();
+//                SaveInChunks = buf.readVarInt();
                 MaxCastRingoClock = buf.readVarInt();
                 CooldownForRewind = buf.readBoolean();
-                CooldownSystem = buf.readEnum(uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem.class);
+                CooldownSystem = buf.readEnum(RewindSystem.CooldownSystem.class);
                 CooldownOwnTime = buf.readVarInt();
                 MaxCastSeconds = buf.readVarInt();
 //                SaveItems = buf.readBoolean();
@@ -236,7 +236,7 @@ public class MandomConfig {
 
             private SyncedValues(Common config) {
                 RewindInChunks = config.RewindInChunks.get();
-                SaveInChunks = config.SaveInChunks.get();
+//                SaveInChunks = config.SaveInChunks.get();
                 MaxCastRingoClock = config.MaxCastRingoClock.get();
                 CooldownForRewind = config.CooldownForRewind.get();
                 CooldownSystem = config.CooldownSystem.get();
@@ -254,7 +254,7 @@ public class MandomConfig {
 
             public static void resetConfig() {
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.clearCache();
-                COMMON_SYNCED_TO_CLIENT.SaveInChunks.clearCache();
+//                COMMON_SYNCED_TO_CLIENT.SaveInChunks.clearCache();
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.clearCache();
                 COMMON_SYNCED_TO_CLIENT.CooldownForRewind.clearCache();
                 COMMON_SYNCED_TO_CLIENT.CooldownSystem.clearCache();
@@ -280,7 +280,7 @@ public class MandomConfig {
 
             public void writeToBuf(PacketBuffer buf) {
                 buf.writeVarInt(RewindInChunks);
-                buf.writeVarInt(SaveInChunks);
+//                buf.writeVarInt(SaveInChunks);
                 buf.writeVarInt(MaxCastRingoClock);
                 buf.writeBoolean(CooldownForRewind);
                 buf.writeEnum(CooldownSystem);
@@ -297,7 +297,7 @@ public class MandomConfig {
             }
 
             public void changeConfigValues() {
-                COMMON_SYNCED_TO_CLIENT.SaveInChunks.set(SaveInChunks);
+//                COMMON_SYNCED_TO_CLIENT.SaveInChunks.set(SaveInChunks);
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.set(RewindInChunks);
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.set(MaxCastRingoClock);
                 COMMON_SYNCED_TO_CLIENT.CooldownForRewind.set(CooldownForRewind);

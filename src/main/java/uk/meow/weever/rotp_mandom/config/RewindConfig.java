@@ -3,7 +3,7 @@ package uk.meow.weever.rotp_mandom.config;
 import uk.meow.weever.rotp_mandom.MandomConfig;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
-public class TPARConfig {
+public class RewindConfig {
     public static int getSecond(boolean clientSide) {
         return MandomConfig.getCommonConfigInstance(clientSide).MaxCastSeconds.get();
     }

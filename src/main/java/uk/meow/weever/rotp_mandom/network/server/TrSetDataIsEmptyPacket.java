@@ -2,7 +2,6 @@ package uk.meow.weever.rotp_mandom.network.server;
 
 import com.github.standobyte.jojo.client.ClientUtil;
 import com.github.standobyte.jojo.network.packets.IModPacketHandler;
-import uk.meow.weever.rotp_mandom.capability.PlayerUtilCapProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -36,7 +35,7 @@ public class TrSetDataIsEmptyPacket {
         public void handle(TrSetDataIsEmptyPacket msg, Supplier<NetworkEvent.Context> ctx) {
             Entity entity = ClientUtil.getEntityById(msg.entityId);
             if (entity != null) {
-                entity.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setDataIsEmpty(msg.set));
+//                entity.getCapability(PlayerUtilCapProvider.CAPABILITY).ifPresent(cap -> cap.setDataIsEmpty(msg.set));
             }
         }
 

@@ -2,7 +2,7 @@ package uk.meow.weever.rotp_mandom.item;
 
 import com.github.standobyte.jojo.client.ClientUtil;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
-import uk.meow.weever.rotp_mandom.config.TPARConfig;
+import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -25,7 +25,7 @@ public class RingoClock extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        int SEC = TPARConfig.getSecond(false);
+        int SEC = RewindConfig.getSecond(false);
         tooltip.add(new TranslationTextComponent("tooltip.rotp_mandom.ringo_clock", SEC, SEC).withStyle(TextFormatting.RED));
         ClientUtil.addItemReferenceQuote(tooltip, this);
     }

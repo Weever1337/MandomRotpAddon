@@ -1,97 +1,108 @@
 package uk.meow.weever.rotp_mandom.capability;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
-import uk.meow.weever.rotp_mandom.network.AddonPackets;
-import uk.meow.weever.rotp_mandom.network.server.TrSetDataIsEmptyPacket;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.List;
 
 public class PlayerUtilCap {
-    private final PlayerEntity player;
-    private List<LivingEntityData> livingEntityData = new LinkedList<>();
-    private List<ProjectileData> projectileData = new LinkedList<>();
-    private List<ItemData> itemData = new LinkedList<>();
-    private List<BlockData> blockData = new LinkedList<>();
-    private List<ClientPlayerData> clientPlayerEntityData = new LinkedList<>();
-    private WorldData worldData = null;
-
-    private boolean dataIsEmpty = true;
+    private final PlayerEntity player; // wtf is here
+    private final LinkedList<List<LivingEntityData>> livingEntityData = new LinkedList<>();
+    private final LinkedList<List<ProjectileData>> projectileData = new LinkedList<>();
+    private final LinkedList<List<ItemData>> itemData = new LinkedList<>();
+    private final LinkedList<List<BlockData>> blockData = new LinkedList<>();
+    private final LinkedList<List<ClientPlayerData>> clientPlayerEntityData = new LinkedList<>();
+    private final LinkedList<WorldData> worldData = new LinkedList<>();
 
     public PlayerUtilCap(PlayerEntity player) {
         this.player = player;
     }
 
-    public List<LivingEntityData> getLivingEntityData() {
+    public LinkedList<List<LivingEntityData>> getLivingEntityData() {
         return livingEntityData;
     }
 
-    public void setLivingEntityData(List<LivingEntityData> livingEntityData) {
-        this.livingEntityData = livingEntityData;
+    public void addLivingEntityData(List<LivingEntityData> livingEntityData, int maxSize) {
+        if (this.livingEntityData.size() > maxSize) {
+            this.livingEntityData.removeFirst();
+        }
+        this.livingEntityData.addLast(livingEntityData);
     }
 
-    public List<ClientPlayerData> getClientPlayerData() {
+    public LinkedList<List<ClientPlayerData>> getClientPlayerData() {
         return clientPlayerEntityData;
     }
 
-    public void setClientPlayerData(List<ClientPlayerData> cData) {
-        this.clientPlayerEntityData = cData;
-    }
-
-    public boolean getDataIsEmpty() {
-        return dataIsEmpty;
-    }
-
-    public void setDataIsEmpty(boolean dataIsEmpty) {
-        this.dataIsEmpty = dataIsEmpty;
-        if (!player.level.isClientSide()) {
-            AddonPackets.sendToClientsTrackingAndSelf(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
+    public void addClientPlayerData(List<ClientPlayerData> cData, int maxSize) {
+        if (this.clientPlayerEntityData.size() > maxSize) {
+            this.clientPlayerEntityData.removeFirst();
         }
+        this.clientPlayerEntityData.addLast(cData);
     }
 
-    public List<ProjectileData> getProjectileData() {
+    public LinkedList<List<ProjectileData>> getProjectileData() {
         return projectileData;
     }
 
-    public void setProjectileData(List<ProjectileData> projectileData) {
-        this.projectileData = projectileData;
+    public void addProjectileData(List<ProjectileData> projectileData, int maxSize) {
+        if (this.projectileData.size() > maxSize) {
+            this.projectileData.removeFirst();
+        }
+        this.projectileData.addLast(projectileData);
     }
 
-    public List<ItemData> getItemData() {
+    public LinkedList<List<ItemData>> getItemData() {
         return itemData;
     }
 
-    public void setItemData(List<ItemData> itemData) {
-        this.itemData = itemData;
+    public void addItemData(List<ItemData> itemData, int maxSize) {
+        if (this.itemData.size() > maxSize) {
+            this.itemData.removeFirst();
+        }
+        this.itemData.addLast(itemData);
     }
 
-    public List<BlockData> getBlockData() {
+    public LinkedList<List<BlockData>> getBlockData() {
         return blockData;
     }
 
-    public void setBlockData(List<BlockData> data) {
-        this.blockData = data;
+    public void addBlockData(List<BlockData> blockData, int maxSize) {
+        if (this.blockData.size() > maxSize) {
+            this.blockData.removeFirst();
+        }
+        this.blockData.addLast(blockData);
     }
 
-    public WorldData getWorldData() {
+    public LinkedList<WorldData> getWorldData() {
         return worldData;
     }
 
-    public void setWorldData(WorldData worldData) {
-        this.worldData = worldData;
+    public void addWorldData(WorldData worldData, int maxSize) {
+        if (this.worldData.size() > maxSize) {
+            this.worldData.removeFirst();
+        }
+        this.worldData.addLast(worldData);
+    }
+
+    public void clear() {
+        livingEntityData.clear();
+        projectileData.clear();
+        clientPlayerEntityData.clear();
+        itemData.clear();
+        blockData.clear();
+        worldData.clear();
     }
 
     public void syncWithAnyPlayer(ServerPlayerEntity player) {
-        AddonPackets.sendToClient(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
+//        AddonPackets.sendToClient(new TrSetDataIsEmptyPacket(player.getId(), dataIsEmpty), player);
     }
 
     public CompoundNBT toNBT() {

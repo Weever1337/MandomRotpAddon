@@ -1,17 +1,13 @@
 package uk.meow.weever.rotp_mandom.data.entity;
 
-import uk.meow.weever.rotp_mandom.config.TPARConfig;
 import uk.meow.weever.rotp_mandom.data.global.LookData;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ProjectileData {
     private final Vector3d position;
