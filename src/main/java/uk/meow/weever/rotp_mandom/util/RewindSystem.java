@@ -45,6 +45,38 @@ import static uk.meow.weever.rotp_mandom.util.AddonUtil.*;
 public class RewindSystem {
     private static final LinkedList<BlockData> TEMP_BLOCK_DATA = new LinkedList<>();
 
+    public static void saveData(PlayerEntity player){
+        List<LivingEntityData> livingEntityData = new ArrayList<>();
+        List<ProjectileData> projectileData = new ArrayList<>();
+        List<ItemData> itemData = new ArrayList<>();
+
+        WorldData worldData = WorldData.saveWorldData(player.level);
+        int range = GlobalConfig.getTimeRewindChunks(player.level.isClientSide()) * 16;
+
+        List<Entity> entities = new ArrayList<>();
+        entities.addAll(MCUtil.entitiesAround(Entity.class, player, range, false, filter ->
+                (filter instanceof LivingEntity || filter instanceof ProjectileEntity || filter instanceof ItemEntity) && !(filter instanceof ArmorStandEntity)));
+        entities.add(player);
+
+        for (Entity entity : entities) {
+            if (entity instanceof LivingEntity) {
+//                if (entity instanceof PlayerEntity) {
+//                    AddonPackets.sendToClient(new RWAddClientPlayerData(entity.getId(), player.getId()), player); // TODO: do this more... better?
+//                }
+                livingEntityData.add(LivingEntityData.saveLivingEntityData((LivingEntity) entity));
+            } else if (entity instanceof ItemEntity) {
+                itemData.add(ItemData.saveItemData((ItemEntity) entity));
+            } else if (entity instanceof ProjectileEntity) {
+                projectileData.add(ProjectileData.saveProjectileData((ProjectileEntity) entity));
+            }
+        }
+
+        CapabilityUtil.addLivingEntityData(player, livingEntityData);
+        CapabilityUtil.addProjectileEntityData(player, projectileData);
+        CapabilityUtil.addItemEntityData(player, itemData);
+        CapabilityUtil.addWorldData(player, worldData);
+    }
+
     public static void rewindData(PlayerEntity player, int range) {
         if (!player.level.isClientSide()) {
             LinkedList<List<BlockData>> blockData = CapabilityUtil.getBlockData(player);
@@ -78,7 +110,6 @@ public class RewindSystem {
             }
 
             CapabilityUtil.removeRewindData(player);
-//            player.level.getServer().execute();
         }
     }
 
@@ -168,38 +199,33 @@ public class RewindSystem {
         return getRingoClock(entity, damage, Hand.OFF_HAND);
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onSetBlock(SetBlockEvent event) {
-        if (!event.getWorld().isClientSide() && !event.getWorld().players().isEmpty()) {
-            BlockState oldBlockState = event.getState();
-            BlockState newBlockState = event.getNewState();
-            BlockPos blockPos = event.getPos();
-            BlockData.TransferBlockData transferBlockData = event.getTransferedData();
-            BlockData.BlockInfo blockInfo;
-
-            if (!oldBlockState.isAir() && newBlockState.isAir()) blockInfo = BlockData.BlockInfo.BREAKED;
-            else if (oldBlockState != newBlockState) blockInfo = BlockData.BlockInfo.PLACED;
-            else return;
-
-            BlockData blockData = BlockData.saveBlockData(oldBlockState, blockPos, blockInfo, transferBlockData);
-            synchronized(TEMP_BLOCK_DATA){
-                TEMP_BLOCK_DATA.add(blockData);
-            }
-        }
-    }
+//    @SubscribeEvent(priority = EventPriority.HIGHEST)
+//    public static void onSetBlock(SetBlockEvent event) {
+//        if (!event.getWorld().isClientSide() && !event.getWorld().players().isEmpty()) {
+//            BlockState oldBlockState = event.getState();
+//            BlockState newBlockState = event.getNewState();
+//            BlockPos blockPos = event.getPos();
+//            BlockData.TransferBlockData transferBlockData = event.getTransferedData();
+//            BlockData.BlockInfo blockInfo;
+//
+//            if (!oldBlockState.isAir() && newBlockState.isAir()) blockInfo = BlockData.BlockInfo.BREAKED;
+//            else if (oldBlockState != newBlockState) blockInfo = BlockData.BlockInfo.PLACED;
+//            else return;
+//
+//            BlockData blockData = BlockData.saveBlockData(oldBlockState, blockPos, blockInfo, transferBlockData);
+//            synchronized(TEMP_BLOCK_DATA){
+//                TEMP_BLOCK_DATA.add(blockData);
+//            }
+//        }
+//    }
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
         if (!event.world.isClientSide()){
-            if (event.phase == TickEvent.Phase.END) {
-                MinecraftServer mcServer = event.world.getServer();
-                TaskScheduler.tick(mcServer);
-            } else {
-                if (event.world.getGameTime() % 20 == 0) {
-                    synchronized (TEMP_BLOCK_DATA){
-                        onBlockSave(event.world, TEMP_BLOCK_DATA);
-                        TEMP_BLOCK_DATA.clear();
-                    }
+            if (event.world.getGameTime() % 20 == 0) {
+                synchronized (TEMP_BLOCK_DATA){
+                    onBlockSave(event.world, TEMP_BLOCK_DATA);
+                    TEMP_BLOCK_DATA.clear();
                 }
             }
         }
@@ -215,7 +241,7 @@ public class RewindSystem {
 
         IStandPower power = IStandPower.getStandPowerOptional(player).orElse(null);
         if (power.getType() == InitStands.MANDOM.getStandType()) {
-            TaskScheduler.scheduleTask(new SaveScheduler(player));
+            saveData(player);
         }
     }
 
@@ -230,8 +256,8 @@ public class RewindSystem {
             List<? extends PlayerEntity> players = level.players();
 
             players.forEach(player -> {
-                System.out.println(player.getName().getString());
-                CapabilityUtil.addBlockData(player, getNearbyBlocks(player, blockDatas, range));
+//                System.out.println(player.getName().getString());
+//                CapabilityUtil.addBlockData(player, getNearbyBlocks(player, blockDatas, range));
             });
         }
     }

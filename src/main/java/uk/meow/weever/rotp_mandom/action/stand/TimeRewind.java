@@ -18,9 +18,7 @@ import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.init.InitSounds;
 import uk.meow.weever.rotp_mandom.init.InitStands;
 import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
-import uk.meow.weever.rotp_mandom.util.RewindScheduler;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
-import uk.meow.weever.rotp_mandom.util.TaskScheduler;
 
 import javax.annotation.Nullable;
 
@@ -50,8 +48,7 @@ public class TimeRewind extends StandEntityAction {
         if (!world.isClientSide()) {
             world.playSound(null,userPower.getUser().blockPosition(), InitSounds.REWIND_START.get(), SoundCategory.PLAYERS,1,1);
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide()) * 16;
-//            RewindSystem.rewindData(player, RANGE);
-            TaskScheduler.scheduleTask(new RewindScheduler(player));
+            RewindSystem.rewindData(player, RANGE);
             RewindSystem.getRingoClock(player, true);
             if (RewindConfig.getCooldownForRewind(world.isClientSide())) {
                 if (RewindConfig.getCooldownSystem(world.isClientSide()) == RewindSystem.CooldownSystem.OWN) {
