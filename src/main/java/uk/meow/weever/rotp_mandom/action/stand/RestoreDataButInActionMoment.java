@@ -39,7 +39,7 @@ public class RestoreDataButInActionMoment extends StandEntityAction {
             //     AddonPackets.sendToClient(new RWSetMandomShader(user.getId(), MANDOM_SHADER), (ServerPlayerEntity) user);
             // }
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide());
-            RewindSystem.rewindData((PlayerEntity) user, RANGE * 16);
+            RewindSystem.rewindData(user, RANGE * 16);
             RewindSystem.getRingoClock(user, true);
             if (RewindConfig.getCooldownForRewind(world.isClientSide())) {
                 if (RewindConfig.getCooldownSystem(world.isClientSide()) == RewindSystem.CooldownSystem.OWN) {

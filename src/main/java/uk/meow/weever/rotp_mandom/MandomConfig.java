@@ -21,10 +21,7 @@ import javax.annotation.Nullable;
 
 @EventBusSubscriber(modid = MandomAddon.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class MandomConfig {
-
-    public static final Client CLIENT;
     static final ForgeConfigSpec commonSpec;
-    static final ForgeConfigSpec clientSpec;
     private static final Common COMMON_FROM_FILE;
     private static final Common COMMON_SYNCED_TO_CLIENT;
 
@@ -39,12 +36,6 @@ public class MandomConfig {
         syncedSpec.correct(config);
         syncedSpec.setConfig(config);
         COMMON_SYNCED_TO_CLIENT = syncedSpecPair.getLeft();
-    }
-
-    static {
-        final Pair<Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Client::new);
-        clientSpec = specPair.getRight();
-        CLIENT = specPair.getLeft();
     }
 
     @SuppressWarnings("unused")
@@ -313,11 +304,6 @@ public class MandomConfig {
 //                COMMON_SYNCED_TO_CLIENT.SaveWorld.set(SaveWorld);
 //                COMMON_SYNCED_TO_CLIENT.RewindDeadLivingEntities.set(RewindDeadLivingEntities);
             }
-        }
-    }
-
-    public static class Client {
-        private Client(ForgeConfigSpec.Builder builder) {
         }
     }
 }

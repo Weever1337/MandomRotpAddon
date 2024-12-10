@@ -6,7 +6,6 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.Property;
-import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -59,15 +58,32 @@ public class BlockData {
         );
     }
 
-    public static void rewindBlockData(World world, BlockData data, List<BlockPos> processedBlocks) {
+    public static void rewindBlockData(World world, BlockData data) {
         BlockPos pos = data.pos;
         BlockState savedState = data.blockState;
         BlockState currentState = world.getBlockState(pos);
         BlockInfo blockInfo = data.blockInfo;
 
+        System.out.println(savedState.getBlock().getName().getString() + " | " + blockInfo.name());
+//        switch (blockInfo) {
+//            case BREAKED:
+//                rewindBlock(world, data);
+//                break;
+//            case PLACED:
+//                if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
+//                    world.setBlock(pos, Fluids.EMPTY.defaultFluidState().createLegacyBlock(), 3);
+//                } else {
+//                    world.removeBlock(pos, false);
+//                }
+//                break;
+//            default:
+//                break;
+//            }
         switch (blockInfo) {
             case BREAKED:
-                rewindBlock(world, data);
+                if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
+                    rewindBlock(world, data);
+                }
                 break;
             case PLACED:
                 if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
@@ -78,7 +94,7 @@ public class BlockData {
                 break;
             default:
                 break;
-            }
+        }
     }
 
     public static void rewindBlock(World world, BlockData data) {
@@ -91,7 +107,7 @@ public class BlockData {
         world.setBlockAndUpdate(data.pos, data.blockState);
         TileEntity tileEntity = world.getBlockEntity(data.pos);
         if (tileEntity != null) {
-            tileEntity.deserializeNBT(data.blockState, data.nbt);
+            tileEntity.deserializeNBT(data.nbt);
             if (tileEntity instanceof IInventory) {
                 BlockInventorySaver.loadBlockInventory(tileEntity, data.inventory);
             }

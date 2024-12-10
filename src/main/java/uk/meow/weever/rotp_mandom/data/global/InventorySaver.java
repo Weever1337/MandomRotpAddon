@@ -43,7 +43,6 @@ public class InventorySaver {
         if (player == null) return;
 
         player.inventory.setCarried(itemStack);
-        AddonPackets.sendToClient(new RWSetCarriedItem(player.getId(), itemStack), player);
     }
 
     public static int saveSelectedSlot(PlayerEntity player) {

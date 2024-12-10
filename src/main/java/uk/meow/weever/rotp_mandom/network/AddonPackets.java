@@ -11,7 +11,6 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import uk.meow.weever.rotp_mandom.MandomAddon;
-import uk.meow.weever.rotp_mandom.network.client.RWSyncClientPlayerDataFromClient;
 import uk.meow.weever.rotp_mandom.network.server.*;
 
 import java.util.Optional;
@@ -37,8 +36,7 @@ public class AddonPackets {
         registerMessage(channel, new RWRemoveMandomShader.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWSetSelectedSlot.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWSetCarriedItem.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-        registerMessage(channel, new RWAddClientPlayerData.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
-        registerMessage(channel, new RWSyncClientPlayerDataFromClient.Handler(), Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        registerMessage(channel, new RWRewindClientPlayerData.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     private static <MSG> void registerMessage(SimpleChannel channel, IModPacketHandler<MSG> handler, Optional<NetworkDirection> networkDirection) {
@@ -58,7 +56,7 @@ public class AddonPackets {
         if (player instanceof ServerPlayerEntity) {
             sendToClient(msg, ((ServerPlayerEntity) player));
         } else {
-            MandomAddon.LOGGER.warn("You can't send a message not by a player!");
+            MandomAddon.LOGGER.warn("You can't send a message not to a player!");
         }
     }
 

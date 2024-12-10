@@ -23,12 +23,7 @@ public class SetBlockEvent extends BlockEvent {
         return newState;
     }
 
-    @Nullable
     public BlockData.TransferBlockData getTransferedData() {
         return transferBlockData;
-    }
-
-    public boolean isNewStateIsOldState() {
-        return newState == oldState;
     }
 }
