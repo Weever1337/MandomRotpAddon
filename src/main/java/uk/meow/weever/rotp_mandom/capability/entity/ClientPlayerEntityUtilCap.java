@@ -1,7 +1,6 @@
 package uk.meow.weever.rotp_mandom.capability.entity;
 
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 

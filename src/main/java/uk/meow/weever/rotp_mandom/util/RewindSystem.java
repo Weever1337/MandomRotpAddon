@@ -6,7 +6,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
@@ -23,7 +22,6 @@ import uk.meow.weever.rotp_mandom.capability.entity.*;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCap;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCapProvider;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
-import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
@@ -55,7 +53,7 @@ public class RewindSystem {
                     }
 
                     if (entity instanceof PlayerEntity) {
-                        AddonPackets.sendToClient(new RWRewindClientPlayerData(entity.getId()), (ServerPlayerEntity) entity);
+                        AddonPackets.sendToClient(new RWRewindClientPlayerData(entity.getId()), (PlayerEntity) entity);
                     }
                 } else if (entity instanceof ProjectileEntity) {
                     LinkedList<ProjectileData> projectileData = CapabilityUtil.getProjectileData((ProjectileEntity) entity);
@@ -70,11 +68,11 @@ public class RewindSystem {
                 }
             }
 
-            LinkedList<List<BlockData>> blockData = CapabilityUtil.getBlockData((ServerWorld) livingEntity.level);
+            LinkedList<List<BlockData>> blockData = CapabilityUtil.getBlockData(livingEntity.level);
             if (blockData != null && !blockData.isEmpty()) {
                 restoreBlocks(blockData, livingEntity.level);
             }
-            LinkedList<WorldData> worldData = CapabilityUtil.getWorldData((ServerWorld) livingEntity.level);
+            LinkedList<WorldData> worldData = CapabilityUtil.getWorldData(livingEntity.level);
             if (worldData != null && !worldData.isEmpty()) {
                 WorldData.rewindWorldData(worldData.getFirst());
             }
@@ -209,8 +207,7 @@ public class RewindSystem {
             List<? extends PlayerEntity> players = level.players();
 
             players.forEach(player -> {
-//                System.out.println(player.getName().getString());
-                CapabilityUtil.addBlockData((ServerWorld) player.level, getNearbyBlocks(player, blockDatas, range));
+                CapabilityUtil.addBlockData(player.level, getNearbyBlocks(player, blockDatas, range));
             });
         }
     }

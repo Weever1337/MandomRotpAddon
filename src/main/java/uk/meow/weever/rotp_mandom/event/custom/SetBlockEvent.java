@@ -4,7 +4,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.BlockEvent;
-import org.jetbrains.annotations.Nullable;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 
 public class SetBlockEvent extends BlockEvent {

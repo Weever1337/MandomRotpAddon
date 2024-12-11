@@ -22,6 +22,7 @@ public class LivingEntityUtilCap {
             if (this.livingEntityData.size() > maxSize) {
                 this.livingEntityData.removeFirst();
             }
+
             addLivingEntityData(LivingEntityData.saveLivingEntityData(livingEntity), maxSize);
         }
     }

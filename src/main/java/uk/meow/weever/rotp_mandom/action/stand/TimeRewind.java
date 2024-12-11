@@ -1,6 +1,5 @@
 package uk.meow.weever.rotp_mandom.action.stand;
 
-import com.github.standobyte.jojo.action.stand.StandAction;
 import com.github.standobyte.jojo.action.stand.StandEntityAction;
 import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
@@ -11,11 +10,15 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
+
 import org.jetbrains.annotations.NotNull;
+
+import uk.meow.weever.rotp_mandom.client.render.vfx.RewindShader;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.init.InitSounds;
 import uk.meow.weever.rotp_mandom.init.InitStands;
+import uk.meow.weever.rotp_mandom.util.AddonUtil;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
 import javax.annotation.Nullable;
@@ -34,8 +37,15 @@ public class TimeRewind extends StandEntityAction {
     }
 
     @Override
-    public void standPerform(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
-        LivingEntity livingEntity = userPower.getUser();
+    public void onTaskSet(World world, StandEntity standEntity, IStandPower power, Phase phase, StandEntityTask task, int ticks) {
+        if (world.isClientSide()) {
+            RewindShader.enableShader(AddonUtil.getShader(power));
+        }
+    }
+
+    @Override
+    public void standPerform(World world, StandEntity standEntity, IStandPower power, StandEntityTask task) {
+        LivingEntity livingEntity = power.getUser();
         if (!world.isClientSide()) {
             world.playSound(null, livingEntity.blockPosition(), InitSounds.REWIND_START.get(), SoundCategory.PLAYERS, 1, 1);
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide()) * 16;
@@ -43,28 +53,23 @@ public class TimeRewind extends StandEntityAction {
             RewindSystem.getRingoClock(livingEntity, true);
             if (RewindConfig.getCooldownForRewind(world.isClientSide())) {
                 if (RewindConfig.getCooldownSystem(world.isClientSide()) == RewindSystem.CooldownSystem.OWN) {
-                    userPower.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getCooldownOwnTime(world.isClientSide()) * 20);
+                    power.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getCooldownOwnTime(world.isClientSide()) * 20);
                 } else {
-                    userPower.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getSecond(world.isClientSide()) * 20);
+                    power.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getSecond(world.isClientSide()) * 20);
                 }
             }
         }
     }
 
     @Override
-    public boolean canUserSeeInStoppedTime(LivingEntity user, IStandPower power) {
-        return false;
+    protected void onTaskStopped(World world, StandEntity standEntity, IStandPower standPower, StandEntityTask task, @Nullable StandEntityAction newAction) {
+        if (world.isClientSide()) {
+            RewindShader.shutdownShader();
+        }
     }
 
     @Override
     public @NotNull ResourceLocation getIconTexture(@Nullable IStandPower power) {
         return getActionTexture(power);
-    }
-
-    @Override
-    public StandAction[] getExtraUnlockable() {
-        return new StandAction[]{
-                InitStands.REWIND_TIPO.get()
-        };
     }
 }

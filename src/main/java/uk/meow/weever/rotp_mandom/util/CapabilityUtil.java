@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import uk.meow.weever.rotp_mandom.capability.entity.*;
@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CapabilityUtil {
-    public static void addBlockData(ServerWorld world, List<BlockData> blockData) {
+    public static void addBlockData(World world, List<BlockData> blockData) {
         if (blockData == null || blockData.isEmpty() || world == null) return;
 
         world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
@@ -48,11 +48,11 @@ public class CapabilityUtil {
         return itemEntity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).map(ItemEntityUtilCap::getItemData).orElse(null);
     }
 
-    public static LinkedList<WorldData> getWorldData(ServerWorld world) {
+    public static LinkedList<WorldData> getWorldData(World world) {
         return world.getCapability(WorldUtilCapProvider.CAPABILITY).map(WorldUtilCap::getWorldData).orElse(null);
     }
 
-    public static LinkedList<List<BlockData>> getBlockData(ServerWorld world) {
+    public static LinkedList<List<BlockData>> getBlockData(World world) {
         return world.getCapability(WorldUtilCapProvider.CAPABILITY).map(WorldUtilCap::getBlockData).orElse(null);
     }
 }

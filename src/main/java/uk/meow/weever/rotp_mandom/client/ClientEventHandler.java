@@ -88,7 +88,7 @@ public class ClientEventHandler {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event){
         if (mc.player != null) {
-            System.out.println(mc.player.level.isClientSide() + " | " + mc.player.inventory.getCarried());
+            // System.out.println(mc.player.level.isClientSide() + " | " + mc.player.inventory.getCarried());
             // TODO: Add a tick event:
             mc.player.getCapability(ClientPlayerEntityUtilCapProvider.CAPABILITY).ifPresent(ClientPlayerEntityUtilCap::tick);
         }

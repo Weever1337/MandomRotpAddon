@@ -1,7 +1,6 @@
 package uk.meow.weever.rotp_mandom.capability.world;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
@@ -9,20 +8,15 @@ import uk.meow.weever.rotp_mandom.data.world.WorldData;
 import javax.swing.text.html.parser.Entity;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 public class WorldUtilCap {
-    private final ServerWorld world;
-    private UUID serverId;
+    private final World world;
     private final LinkedList<WorldData> worldData = new LinkedList<>();
     private final LinkedList<List<BlockData>> blockData = new LinkedList<>();
     private LinkedList<List<Entity>> diedEntities = new LinkedList<>();
 
-    public WorldUtilCap(ServerWorld world) {
+    public WorldUtilCap(World world) {
         this.world = world;
-        if (!world.isClientSide()) {
-            this.serverId = UUID.randomUUID();
-        }
     }
 
     public void tick() {
@@ -68,18 +62,6 @@ public class WorldUtilCap {
 
     public void addDiedEntities(List<Entity> diedEntities) {
         this.diedEntities.addLast(diedEntities);
-    }
-
-    CompoundNBT save() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putUUID("ServerId", serverId);
-        return nbt;
-    }
-
-    void load(CompoundNBT nbt) {
-        if (nbt.hasUUID("ServerId")) {
-            serverId = nbt.getUUID("ServerId");
-        }
     }
 }
 

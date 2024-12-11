@@ -22,13 +22,13 @@ public class ClientPlayerData {
     public static void rewindClientPlayerData(ClientPlayerData clientPlayerData) {
         if (clientPlayerData.restored) return;
         AbstractClientPlayerEntity player = clientPlayerData.player;
-        System.out.println(clientPlayerData.carriedItem.getDisplayName().getString());
+        // System.out.println(clientPlayerData.carriedItem.getDisplayName().getString());
         InventorySaver.loadCarriedItem(player, clientPlayerData.carriedItem);
         clientPlayerData.restored = true;
     }
 
     public static ClientPlayerData saveClientPlayerData(AbstractClientPlayerEntity entity) {
-        System.out.println(InventorySaver.saveCarriedItem(entity));
+        // System.out.println(InventorySaver.saveCarriedItem(entity));
         return new ClientPlayerData(
             entity,
             entity.getUUID(),

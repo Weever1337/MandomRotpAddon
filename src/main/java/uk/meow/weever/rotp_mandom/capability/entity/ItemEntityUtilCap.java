@@ -19,12 +19,10 @@ public class ItemEntityUtilCap {
         int maxSize = RewindConfig.getSecond(itemEntity.level.isClientSide());
 
         if (itemEntity.tickCount % 20 == 0) {
-            if (itemEntity instanceof ItemEntity) {
-                if (this.itemData.size() > maxSize) {
-                    this.itemData.removeFirst();
-                }
-                addItemData(ItemData.saveItemData(itemEntity), maxSize);
+            if (this.itemData.size() > maxSize) {
+                this.itemData.removeFirst();
             }
+            addItemData(ItemData.saveItemData(itemEntity), maxSize);
         }
     }
 

@@ -10,7 +10,6 @@ import com.github.standobyte.jojo.util.mod.StoryPart;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import uk.meow.weever.rotp_mandom.MandomAddon;
-import uk.meow.weever.rotp_mandom.action.stand.RestoreDataButInActionMoment;
 import uk.meow.weever.rotp_mandom.action.stand.TimeRewind;
 import uk.meow.weever.rotp_mandom.entity.MandomEntity;
 
@@ -50,10 +49,4 @@ public class InitStands {
                             .summonSound(InitSounds.STAND_SUMMON)
                             .unsummonSound(InitSounds.STAND_UNSUMMON))
                     .withDefaultStandAttributes();
-
-    public static final RegistryObject<RestoreDataButInActionMoment> REWIND_TIPO = ACTIONS.register("restore_data",
-            () -> new RestoreDataButInActionMoment(new RestoreDataButInActionMoment.Builder()
-                    .ignoresPerformerStun()
-                    .autoSummonStand()
-            ));
 }

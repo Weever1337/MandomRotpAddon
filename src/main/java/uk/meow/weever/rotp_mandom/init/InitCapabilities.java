@@ -9,7 +9,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -19,7 +18,6 @@ import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.capability.entity.*;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCap;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCapProvider;
-import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCapStorage;
 
 @Mod.EventBusSubscriber(modid = MandomAddon.MOD_ID)
 public class InitCapabilities {
@@ -47,9 +45,7 @@ public class InitCapabilities {
     @SubscribeEvent
     public static void onAttachCapabilitiesWorld(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
-        if (!world.isClientSide()) {
-            event.addCapability(WORLD_UTIL, new WorldUtilCapProvider((ServerWorld) world));
-        }
+        event.addCapability(WORLD_UTIL, new WorldUtilCapProvider(world));
     }
 
     @SubscribeEvent
@@ -69,6 +65,6 @@ public class InitCapabilities {
         CapabilityManager.INSTANCE.register(LivingEntityUtilCap.class, new LivingEntityUtilCapStorage(), () -> new LivingEntityUtilCap(null));
         CapabilityManager.INSTANCE.register(ProjectileEntityUtilCap.class, new ProjectileEntityUtilCapStorage(), () -> new ProjectileEntityUtilCap(null));
         CapabilityManager.INSTANCE.register(ItemEntityUtilCap.class, new ItemEntityUtilCapStorage(), () -> new ItemEntityUtilCap(null));
-        CapabilityManager.INSTANCE.register(WorldUtilCap.class, new WorldUtilCapStorage(), () -> new WorldUtilCap(null));
+        CapabilityManager.INSTANCE.register(WorldUtilCap.class, JojoModUtil.noStorage(), () -> new WorldUtilCap(null));
     }
 }
