@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.entity.IEntityRenderer;
 import net.minecraft.client.renderer.entity.PlayerRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.entity.model.BipedModel;
+import net.minecraft.client.renderer.entity.model.EntityModel;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.LivingEntity;
@@ -24,16 +25,13 @@ import uk.meow.weever.rotp_mandom.init.InitStands;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MandomLayerRenderer<T extends LivingEntity, M extends BipedModel<T>> extends LayerRenderer<T, M> {
-    private static final Map<PlayerRenderer, MandomLayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> RENDERER_LAYERS = new HashMap<>();
+public class MandomLayerRenderer<T extends LivingEntity, M extends EntityModel<T>> extends LayerRenderer<T, M> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(MandomAddon.MOD_ID, "textures/entity/stand/mandom_layer.png");
-    private final MandomLayerModel<T, BipedModel<T>> mandomArchive = new MandomLayerModel<>(0, false);
+    private final MandomLayerModel<T> mandomArchive;
 
     public MandomLayerRenderer(IEntityRenderer<T, M> renderer) {
         super(renderer);
-        if (renderer instanceof PlayerRenderer) {
-            RENDERER_LAYERS.put((PlayerRenderer) renderer, (MandomLayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>) this);
-        }
+        this.mandomArchive = new MandomLayerModel<>(0);
     }
 
     @Override
@@ -45,13 +43,14 @@ public class MandomLayerRenderer<T extends LivingEntity, M extends BipedModel<T>
         IStandPower.getStandPowerOptional(entity).ifPresent((stand) -> {
             StandType<?> mandom = InitStands.MANDOM.getStandType();
             if (stand.getType() == mandom && stand.isActive()) {
-                M playerModel = getParentModel();
+                M entityModel = getParentModel();
                 mandomArchive.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
-                playerModel.copyPropertiesTo(mandomArchive);
+                mandomArchive.copyPropertiesTo(entityModel);
                 mandomArchive.setupAnim(entity, limbSwing, limbSwingAmount, ticks, yRot, xRot);
+
                 ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
                         .getStandSkin(stand.getStandInstance().get()), TEXTURE);
-                IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(texture), false, false);
+                IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.entityTranslucent(texture), false, false);
                 mandomArchive.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
             }
         });

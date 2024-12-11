@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -22,11 +23,13 @@ import uk.meow.weever.rotp_mandom.capability.entity.*;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCap;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCapProvider;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
+import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
+import uk.meow.weever.rotp_mandom.event.custom.RemoveEntityEvent;
 import uk.meow.weever.rotp_mandom.event.custom.SetBlockEvent;
 import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
@@ -34,17 +37,24 @@ import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.RWRewindClientPlayerData;
 
 import java.util.*;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import static uk.meow.weever.rotp_mandom.util.AddonUtil.entitiesAround;
 import static uk.meow.weever.rotp_mandom.util.AddonUtil.getNearbyBlocks;
 
 @Mod.EventBusSubscriber(modid = MandomAddon.MOD_ID)
 public class RewindSystem {
-    private static final LinkedList<BlockData> TEMP_BLOCK_DATA = new LinkedList<>();
+    private static final List<BlockData> TEMP_BLOCK_DATA = new ArrayList<>();
+    private static final List<Entity> TEMP_ENTITY_DATA = new ArrayList<>();
 
     public static void rewindData(LivingEntity livingEntity, int range) {
         if (!livingEntity.level.isClientSide()) {
-            List<Entity> entities = entitiesAround(Entity.class, livingEntity.level, livingEntity.position(), range, entity -> (entity instanceof LivingEntity || entity instanceof ProjectileEntity || entity instanceof ItemEntity) && !(entity instanceof ArmorStandEntity));
+            List<Entity> entities = entitiesAround(Entity.class, livingEntity.level, livingEntity.position(), range, AddonUtil::predicateForRewind);
+            List<Entity> deadEntities = getAllDeadEntities(WorldUtilCapProvider.getWorldCap(livingEntity.level).getDeadEntities(), AddonUtil::predicateForRewind);
+            entities.addAll(deadEntities);
+
             for (Entity entity : entities) {
                 if (entity instanceof LivingEntity) {
                     LinkedList<LivingEntityData> livingEntityData = CapabilityUtil.getLivingEntityData((LivingEntity) entity);
@@ -79,10 +89,22 @@ public class RewindSystem {
         }
     }
 
+    private static <T extends Entity> List<Entity> getAllDeadEntities(LinkedList<List<Entity>> linkedListWithDeadEntities, @Nullable Predicate<? super T> filter) {
+        List<Entity> list = new ArrayList<>();
+        for (List<Entity> linkEntities : linkedListWithDeadEntities) {
+            if (filter != null) {
+                linkEntities.removeIf(entity -> !filter.test((T) entity));
+            }
+            list.addAll(linkEntities);
+        }
+        return list;
+    }
+
     private static void rewindLivingEntityData(LivingEntityData data) {
         if (data.entity.isAlive()) {
             data.rewindLivingEntityData(data);
         } else {
+            System.out.println("Dead: " + data.entity.getName().getString());
             data.rewindDeadLivingEntityData(data, data.entity.level);
         }
     }
@@ -165,8 +187,26 @@ public class RewindSystem {
         }
     }
 
-//    @SubscribeEvent(priority = EventPriority.HIGH)
-//    public static void onEntityDie(RemoveEntityEvent event) {} // TODO: Create a custom event via Mixin (this.remove() moment)
+   @SubscribeEvent(priority = EventPriority.HIGH)
+   public static void onEntityRemove(RemoveEntityEvent event) {
+        Entity entity = event.getEntity();
+        onRemoversEvents(entity);
+   } // TODO: Create a custom event via Mixin (this.remove() moment)
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onEntityDie(LivingDeathEvent event) {
+        Entity entity = event.getEntity();
+        onRemoversEvents(entity);
+    }
+
+    private static void onRemoversEvents(Entity entity) {
+        if (!entity.level.isClientSide() && !TEMP_ENTITY_DATA.contains(entity)) {
+            System.out.println(entity.getName().getString());
+            synchronized (TEMP_ENTITY_DATA) {
+                TEMP_ENTITY_DATA.add(entity);
+            }
+        }
+    }
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
@@ -192,6 +232,14 @@ public class RewindSystem {
                     onBlockSave(event.world, TEMP_BLOCK_DATA);
                     TEMP_BLOCK_DATA.clear();
                 }
+
+                synchronized (TEMP_ENTITY_DATA){
+                    int maxSeconds = RewindConfig.getSecond(event.world.isClientSide());
+                    event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+                        cap.addDeadEntities(TEMP_ENTITY_DATA, maxSeconds);
+                    });
+                    TEMP_ENTITY_DATA.clear();
+                }
             }
         }
     }
@@ -201,11 +249,10 @@ public class RewindSystem {
         OWN
     }
 
-    private static void onBlockSave(World level, LinkedList<BlockData> blockDatas) {
+    private static void onBlockSave(World level, List<BlockData> blockDatas) {
         if (blockDatas != null && !blockDatas.isEmpty() && !level.isClientSide()) {
             int range = GlobalConfig.getTimeRewindChunks(level.isClientSide()) * 16;
             List<? extends PlayerEntity> players = level.players();
-
             players.forEach(player -> {
                 CapabilityUtil.addBlockData(player.level, getNearbyBlocks(player, blockDatas, range));
             });

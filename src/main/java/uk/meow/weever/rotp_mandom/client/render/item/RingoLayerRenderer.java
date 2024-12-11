@@ -66,24 +66,38 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
         }
     }
 
-     @Override
-     public void renderHandFirstPerson(HandSide side, MatrixStack matrixStack, IRenderTypeBuffer buffer, int light,
-             AbstractClientPlayerEntity player, PlayerRenderer playerRenderer) {
-         if (!(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
-             boolean isRingo = RewindSystem.getRingoClock(player, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(player, false, Hand.OFF_HAND);
-             if (!isRingo) {
-                 return;
-             }
-             PlayerModel<AbstractClientPlayerEntity> model = (PlayerModel<AbstractClientPlayerEntity>) ringoModel;
-             ClientUtil.setupForFirstPersonRender(model, player);
-             IVertexBuilder vertexBuilder = buffer.getBuffer(RenderType.entityTranslucent(TEXTURE));
-             ModelRenderer arm = ClientUtil.getArm(model, side);
-             ModelRenderer armOuter = ClientUtil.getArmOuter(model, side);
-             arm.xRot = 0.0F;
-             arm.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
-             armOuter.xRot = 0.0F;
-             armOuter.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
-//             IFirstPersonHandLayer.defaultRender(side, matrixStack, buffer, light, player, playerRenderer, model, TEXTURE); // FIXME короче рандомно пропадают некоторые части от часов, фикситься через ф5, я не ебу как это лол
-         }
-     }
+    @Override
+    public void renderHandFirstPerson(HandSide side, MatrixStack matrixStack, IRenderTypeBuffer buffer, int light,
+                                      AbstractClientPlayerEntity player, PlayerRenderer playerRenderer) {
+        if (!(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
+            boolean isRingo = RewindSystem.getRingoClock(player, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(player, false, Hand.OFF_HAND);
+            if (!isRingo) {
+                return;
+            }
+            PlayerModel<AbstractClientPlayerEntity> model = (PlayerModel<AbstractClientPlayerEntity>) ringoModel;
+            ClientUtil.setupForFirstPersonRender(model, player);
+
+            model.setAllVisible(false);
+            model.rightArm.visible = true;
+            model.leftArm.visible = true;
+
+            matrixStack.pushPose();
+            matrixStack.translate(0, 0.05F, 0);
+
+            IVertexBuilder vertexBuilder = buffer.getBuffer(RenderType.entityTranslucent(TEXTURE));
+            ModelRenderer arm = ClientUtil.getArm(model, side);
+            ModelRenderer armOuter = ClientUtil.getArmOuter(model, side);
+
+            float pizdec = side == HandSide.LEFT ? -0.15F : 0.15F;
+            arm.xRot = pizdec;
+            arm.yRot = 0;
+            arm.zRot = 0;
+            armOuter.xRot = 0;
+            armOuter.yRot = 0;
+            armOuter.zRot = 0;
+
+            arm.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
+            armOuter.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
 }

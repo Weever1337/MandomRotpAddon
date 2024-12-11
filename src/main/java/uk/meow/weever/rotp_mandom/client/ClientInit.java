@@ -69,11 +69,13 @@ public class ClientInit {
         addBipedLayers(renderer);
     }
 
-    private static <T extends LivingEntity, M extends BipedModel<T>> void addLayersToEntities(EntityRenderer<?> renderer) {
+    private static <T extends LivingEntity, M extends EntityModel<T>> void addLayersToEntities(EntityRenderer<?> renderer) {
         if (renderer instanceof LivingRenderer<?, ?>) {
-            addLivingLayers((LivingRenderer<T, ?>) renderer);
-            if (((LivingRenderer<?, ?>) renderer).getModel() instanceof BipedModel<?>) {
-                addBipedLayers((LivingRenderer<T, M>) renderer);
+            LivingRenderer<T, M> livingRenderer = (LivingRenderer<T, M>) renderer;
+            livingRenderer.addLayer(new MandomLayerRenderer<>(livingRenderer));
+            addLivingLayers(livingRenderer);
+            if (livingRenderer.getModel() instanceof BipedModel<?>) {
+                addBipedLayers((LivingRenderer<T, BipedModel<T>>) livingRenderer);
             }
         }
     }

@@ -1,11 +1,11 @@
 package uk.meow.weever.rotp_mandom.capability.world;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,7 +13,7 @@ public class WorldUtilCap {
     private final World world;
     private final LinkedList<WorldData> worldData = new LinkedList<>();
     private final LinkedList<List<BlockData>> blockData = new LinkedList<>();
-    private LinkedList<List<Entity>> diedEntities = new LinkedList<>();
+    private LinkedList<List<Entity>> deadEntities = new LinkedList<>();
 
     public WorldUtilCap(World world) {
         this.world = world;
@@ -29,6 +29,10 @@ public class WorldUtilCap {
 
             if (this.worldData.size() > maxSize) {
                 this.worldData.removeFirst();
+            }
+
+            if (this.deadEntities.size() > maxSize) {
+                this.deadEntities.removeFirst();
             }
             addWorldData(WorldData.saveWorldData(world), maxSize);
         }
@@ -56,12 +60,15 @@ public class WorldUtilCap {
         this.worldData.addLast(worldData);
     }
 
-    public LinkedList<List<Entity>> getDiedEntities() {
-        return diedEntities;
+    public LinkedList<List<Entity>> getDeadEntities() {
+        return deadEntities;
     }
 
-    public void addDiedEntities(List<Entity> diedEntities) {
-        this.diedEntities.addLast(diedEntities);
+    public void addDeadEntities(List<Entity> tempEntityData, int maxSize) {
+        if (this.deadEntities.size() > maxSize) {
+            this.deadEntities.removeFirst();
+        }
+        this.deadEntities.addLast(tempEntityData);
     }
 }
 

@@ -1,7 +1,11 @@
 package uk.meow.weever.rotp_mandom.util;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -44,5 +48,9 @@ public class AddonUtil {
         ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
                 .getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
         return texture;
+    }
+
+    public static boolean predicateForRewind(Entity entity) {
+        return (entity instanceof LivingEntity || entity instanceof ProjectileEntity || entity instanceof ItemEntity) && !(entity instanceof ArmorStandEntity);
     }
 }
