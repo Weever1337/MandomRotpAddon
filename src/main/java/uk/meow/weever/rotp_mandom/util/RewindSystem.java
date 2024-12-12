@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.HandSide;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -36,10 +37,9 @@ import uk.meow.weever.rotp_mandom.item.RingoClock;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.RWRewindClientPlayerData;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
 
 import static uk.meow.weever.rotp_mandom.util.AddonUtil.entitiesAround;
 import static uk.meow.weever.rotp_mandom.util.AddonUtil.getNearbyBlocks;
@@ -163,8 +163,12 @@ public class RewindSystem {
         return false;
     }
 
-    public static void getRingoClock(LivingEntity entity, boolean damage) {
-        getRingoClock(entity, damage, Hand.OFF_HAND);
+    public static boolean getRingoClock(LivingEntity entity, boolean damage) {
+        return getRingoClock(entity, damage, Hand.OFF_HAND);
+    }
+
+    public static boolean getRingoClock(LivingEntity entity, HandSide handSide) {
+        return getRingoClock(entity, false, handSide == HandSide.RIGHT ? Hand.MAIN_HAND : Hand.OFF_HAND);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

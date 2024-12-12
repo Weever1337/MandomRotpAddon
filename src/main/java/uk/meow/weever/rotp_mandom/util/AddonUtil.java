@@ -1,5 +1,7 @@
 package uk.meow.weever.rotp_mandom.util;
 
+import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
+import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
@@ -15,10 +17,6 @@ import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 
 import javax.annotation.Nullable;
-
-import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
-import com.github.standobyte.jojo.power.impl.stand.IStandPower;
-
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,8 +43,7 @@ public class AddonUtil {
     }
 
     public static ResourceLocation getShader(IStandPower power) {
-        ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
-                .getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
+        ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager.getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
         return texture;
     }
 

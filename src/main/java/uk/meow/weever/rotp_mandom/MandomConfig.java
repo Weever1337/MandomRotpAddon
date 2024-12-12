@@ -24,6 +24,14 @@ public class MandomConfig {
     static final ForgeConfigSpec commonSpec;
     private static final Common COMMON_FROM_FILE;
     private static final Common COMMON_SYNCED_TO_CLIENT;
+    public static final Client CLIENT;
+    static final ForgeConfigSpec clientSpec;
+
+    static {
+        final Pair<Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Client::new);
+        clientSpec = specPair.getRight();
+        CLIENT = specPair.getLeft();
+    }
 
     static {
         final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
@@ -304,6 +312,19 @@ public class MandomConfig {
 //                COMMON_SYNCED_TO_CLIENT.SaveWorld.set(SaveWorld);
 //                COMMON_SYNCED_TO_CLIENT.RewindDeadLivingEntities.set(RewindDeadLivingEntities);
             }
+        }
+    }
+
+    public static class Client {
+        public final ForgeConfigSpec.BooleanValue isShaderEnabled;
+
+        private Client(ForgeConfigSpec.Builder builder) {
+            builder.push("Config");
+            isShaderEnabled = builder.translation("rotp_mandom.config.client.isShaderEnabled")
+                    .comment("  Determines if rewind shaders are enabled",
+                            "  Default is to true.")
+                    .define("isShaderEnabled", true);
+            builder.pop();
         }
     }
 }

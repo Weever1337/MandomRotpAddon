@@ -11,6 +11,10 @@
       "rotp_mandom:acid": {
         "stand_type": "rotp_mandom:mandom",
         "color" : "0x5bb084"
+      },
+      "rotp_mandom:shadow": {
+        "stand_type": "rotp_mandom:mandom",
+        "color" : "0xfc86a8"
       }
     }
   }

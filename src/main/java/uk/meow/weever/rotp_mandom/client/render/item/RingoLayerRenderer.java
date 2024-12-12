@@ -18,11 +18,13 @@ import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.ResourceLocation;
 import uk.meow.weever.rotp_mandom.MandomAddon;
+import uk.meow.weever.rotp_mandom.item.RingoClock;
 import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
 import java.util.HashMap;
@@ -32,7 +34,6 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
     private static final Map<PlayerRenderer, RingoLayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> RENDERER_LAYERS = new HashMap<>();
     private static final ResourceLocation TEXTURE = new ResourceLocation(MandomAddon.MOD_ID, "textures/item/ringo_layer.png");
     private final M ringoModel;
-    private boolean triedToRender = false;
 
     public RingoLayerRenderer(IEntityRenderer<T, M> renderer, M mmm) {
         super(renderer);
@@ -46,32 +47,27 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
     @Override
     public void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, T entity,
                        float limbSwing, float limbSwingAmount, float partialTick, float ticks, float yRot, float xRot) {
-        if (triedToRender) return;
 
-        try {
-            boolean isRingo = RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND);
-            if (!isRingo) {
-                return;
-            }
-            M playerModel = getParentModel();
-            ringoModel.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
-            playerModel.copyPropertiesTo(ringoModel);
-            ringoModel.setupAnim(entity, limbSwing, limbSwingAmount, ticks, yRot, xRot);
-            ((RingoLayerModel<?>) ringoModel).setupClockPosition(entity, RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND), RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND));
-            IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(TEXTURE), false, false);
-            ringoModel.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
-        } catch (NullPointerException exception) {
-            triedToRender = true;
-            MandomAddon.LOGGER.error("CANT RENDER A CLOCKS");
+        boolean isRingo = RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND);
+        if (!isRingo) {
+            return;
         }
+        M playerModel = getParentModel();
+        ringoModel.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
+        playerModel.copyPropertiesTo(ringoModel);
+        ringoModel.setupAnim(entity, limbSwing, limbSwingAmount, ticks, yRot, xRot);
+        ((RingoLayerModel<?>) ringoModel).setupClockPosition(entity, RewindSystem.getRingoClock(entity, false, Hand.OFF_HAND), RewindSystem.getRingoClock(entity, false, Hand.MAIN_HAND));
+        IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(TEXTURE), false, false);
+        ringoModel.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 
     @Override
     public void renderHandFirstPerson(HandSide side, MatrixStack matrixStack, IRenderTypeBuffer buffer, int light,
                                       AbstractClientPlayerEntity player, PlayerRenderer playerRenderer) {
         if (!(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
-            boolean isRingo = RewindSystem.getRingoClock(player, false, Hand.MAIN_HAND) || RewindSystem.getRingoClock(player, false, Hand.OFF_HAND);
-            if (!isRingo) {
+            boolean isRingo = RewindSystem.getRingoClock(player, side);
+            ItemStack ringoClockStack = getRenderedClockItem(player);
+            if (!isRingo || ringoClockStack.isEmpty()) {
                 return;
             }
             PlayerModel<AbstractClientPlayerEntity> model = (PlayerModel<AbstractClientPlayerEntity>) ringoModel;
@@ -99,5 +95,17 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
             arm.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
             armOuter.render(matrixStack, vertexBuilder, light, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
         }
+    }
+
+    public static ItemStack getRenderedClockItem(LivingEntity entity) {
+        ItemStack checkedItem = entity.getMainHandItem();
+        if (areClocks(checkedItem)) return checkedItem;
+        checkedItem = entity.getOffhandItem();
+        if (areClocks(checkedItem)) return checkedItem;
+        return ItemStack.EMPTY;
+    }
+
+    public static boolean areClocks(ItemStack item) {
+        return !item.isEmpty() && item.getItem() instanceof RingoClock;
     }
 }

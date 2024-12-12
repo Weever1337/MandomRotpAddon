@@ -10,9 +10,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
-
 import org.jetbrains.annotations.NotNull;
-
+import uk.meow.weever.rotp_mandom.MandomConfig;
 import uk.meow.weever.rotp_mandom.client.render.vfx.RewindShader;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
@@ -38,8 +37,8 @@ public class TimeRewind extends StandEntityAction {
 
     @Override
     public void onTaskSet(World world, StandEntity standEntity, IStandPower power, Phase phase, StandEntityTask task, int ticks) {
-        if (world.isClientSide()) {
-            RewindShader.enableShader(AddonUtil.getShader(power));
+        if (world.isClientSide() && MandomConfig.CLIENT.isShaderEnabled.get()) {
+            RewindShader.enableShader(AddonUtil.getShader(power), 10);
         }
     }
 
@@ -47,7 +46,7 @@ public class TimeRewind extends StandEntityAction {
     public void standPerform(World world, StandEntity standEntity, IStandPower power, StandEntityTask task) {
         LivingEntity livingEntity = power.getUser();
         if (!world.isClientSide()) {
-            world.playSound(null, livingEntity.blockPosition(), InitSounds.REWIND_START.get(), SoundCategory.PLAYERS, 1, 1);
+            world.playSound(null, livingEntity.blockPosition(), InitSounds.REWIND.get(), SoundCategory.NEUTRAL, 1, 1);
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide()) * 16;
             RewindSystem.rewindData(livingEntity, RANGE);
             RewindSystem.getRingoClock(livingEntity, true);
@@ -58,13 +57,6 @@ public class TimeRewind extends StandEntityAction {
                     power.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getSecond(world.isClientSide()) * 20);
                 }
             }
-        }
-    }
-
-    @Override
-    protected void onTaskStopped(World world, StandEntity standEntity, IStandPower standPower, StandEntityTask task, @Nullable StandEntityAction newAction) {
-        if (world.isClientSide()) {
-            RewindShader.shutdownShader();
         }
     }
 

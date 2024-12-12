@@ -23,6 +23,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import uk.meow.weever.rotp_mandom.capability.entity.ClientPlayerEntityUtilCap;
 import uk.meow.weever.rotp_mandom.capability.entity.ClientPlayerEntityUtilCapProvider;
+import uk.meow.weever.rotp_mandom.client.render.vfx.RewindShader;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 
 public class ClientEventHandler {
@@ -88,9 +89,8 @@ public class ClientEventHandler {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event){
         if (mc.player != null) {
-            // System.out.println(mc.player.level.isClientSide() + " | " + mc.player.inventory.getCarried());
-            // TODO: Add a tick event:
             mc.player.getCapability(ClientPlayerEntityUtilCapProvider.CAPABILITY).ifPresent(ClientPlayerEntityUtilCap::tick);
+            RewindShader.onShaderTick();
         }
     }
 }

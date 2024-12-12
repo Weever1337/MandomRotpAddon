@@ -21,6 +21,7 @@ public class MandomAddon {
     public static final Logger LOGGER = LogManager.getLogger();
 
     public MandomAddon() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, MandomConfig.clientSpec);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MandomConfig.commonSpec);
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         InitEntities.ENTITIES.register(modEventBus);

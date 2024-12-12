@@ -3,6 +3,7 @@
   "stand.rotp_mandom.mandom": "Mandom",
 
   "action.rotp_mandom.time_rewind": "Przewijanie czasu",
+  "action.rotp_mandom.time_rewind.sec": "Przewijanie czasu | Sekundy: %s",
 
   "tooltip.rotp_mandom.ringo_clock": "Tylko %s sekund. Ani sekundy dłużej, ani sekundy krócej. Dokładnie przez %s sekund.",
   "item.rotp_mandom.ringo_clock.reference_quote": "To jest świat mężczyzn.",

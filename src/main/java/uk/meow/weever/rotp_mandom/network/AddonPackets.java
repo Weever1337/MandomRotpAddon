@@ -34,6 +34,7 @@ public class AddonPackets {
         registerMessage(channel, new TrResetDeathTimePacket.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWSetSelectedSlot.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWSetCarriedItem.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        registerMessage(channel, new RWRemoveShader.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         registerMessage(channel, new RWRewindClientPlayerData.Handler(), Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
