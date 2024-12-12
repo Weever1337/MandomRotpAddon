@@ -173,7 +173,8 @@ public class RewindSystem {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSetBlock(SetBlockEvent event) {
-        if (!event.getWorld().isClientSide() && !event.getWorld().players().isEmpty()) {
+        if (!event.getWorld().isClientSide()) {
+            System.out.println(event.getWorld());
             BlockState oldBlockState = event.getState();
             BlockState newBlockState = event.getNewState();
             BlockPos blockPos = event.getPos();
@@ -195,7 +196,7 @@ public class RewindSystem {
    public static void onEntityRemove(RemoveEntityEvent event) {
         Entity entity = event.getEntity();
         onRemoversEvents(entity);
-   } // TODO: Create a custom event via Mixin (this.remove() moment)
+   }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onEntityDie(LivingDeathEvent event) {
@@ -205,7 +206,7 @@ public class RewindSystem {
 
     private static void onRemoversEvents(Entity entity) {
         if (!entity.level.isClientSide() && !TEMP_ENTITY_DATA.contains(entity)) {
-            System.out.println(entity.getName().getString());
+//            System.out.println(entity.getName().getString());
             synchronized (TEMP_ENTITY_DATA) {
                 TEMP_ENTITY_DATA.add(entity);
             }

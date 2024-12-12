@@ -1,16 +1,17 @@
 package uk.meow.weever.rotp_mandom.capability.entity;
 
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
 
 import java.util.LinkedList;
 
 public class ClientPlayerEntityUtilCap {
-    private final AbstractClientPlayerEntity playerEntity;
+    private final PlayerEntity playerEntity;
     private final LinkedList<ClientPlayerData> clientPlayerEntityData = new LinkedList<>();
 
-    public ClientPlayerEntityUtilCap(AbstractClientPlayerEntity playerEntity) {
+    public ClientPlayerEntityUtilCap(PlayerEntity playerEntity) {
         this.playerEntity = playerEntity;
     }
 

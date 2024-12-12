@@ -45,7 +45,9 @@ public class InitCapabilities {
     @SubscribeEvent
     public static void onAttachCapabilitiesWorld(AttachCapabilitiesEvent<World> event) {
         World world = event.getObject();
-        event.addCapability(WORLD_UTIL, new WorldUtilCapProvider(world));
+        if (!world.isClientSide()) {
+            event.addCapability(WORLD_UTIL, new WorldUtilCapProvider(world));
+        }
     }
 
     @SubscribeEvent

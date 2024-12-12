@@ -20,7 +20,9 @@ public class WorldUtilCap {
     }
 
     public void tick() {
+        if (world == null || world.isClientSide()) return;
         int maxSize = RewindConfig.getSecond(world.isClientSide());
+//        System.out.println(world.dimension().location());
 
         if (world.getGameTime() % 20 == 0) {
             if (this.blockData.size() > maxSize) {

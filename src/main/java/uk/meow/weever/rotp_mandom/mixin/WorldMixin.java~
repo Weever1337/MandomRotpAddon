@@ -33,7 +33,6 @@ public abstract class WorldMixin {
         World world = (World) (Object) this;
         if (!world.isClientSide()) {
             BlockState oldState = world.getBlockState(pos);
-            if (oldState == null) return;
             TileEntity tileEntity = world.getBlockEntity(pos);
 
             CompoundNBT nbt = null;
