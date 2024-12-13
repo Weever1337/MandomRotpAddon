@@ -1,5 +1,7 @@
 package uk.meow.weever.rotp_mandom.action.stand;
 
+import com.github.standobyte.jojo.action.ActionConditionResult;
+import com.github.standobyte.jojo.action.ActionTarget;
 import com.github.standobyte.jojo.action.stand.StandEntityAction;
 import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
 import com.github.standobyte.jojo.entity.stand.StandEntity;
@@ -33,6 +35,15 @@ public class TimeRewind extends StandEntityAction {
 
     public TimeRewind(Builder builder) {
         super(builder);
+    }
+
+    @Override
+    public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+        super.checkConditions(user, power, target);
+        if (user.level.dimension() != World.OVERWORLD) {
+            return ActionConditionResult.NEGATIVE;
+        }
+        return ActionConditionResult.POSITIVE;
     }
 
     @Override

@@ -11,29 +11,33 @@ public class ClientPlayerData {
     public PlayerEntity player;
     public UUID playerUuid;
     private final ItemStack carriedItem;
+    private final int selectedSlot;
     public boolean restored;
 
-    public ClientPlayerData(PlayerEntity player, UUID playerUuid, ItemStack carriedItem, boolean restored) {
+    public ClientPlayerData(PlayerEntity player, UUID playerUuid, ItemStack carriedItem, int selectedSlot, boolean restored) {
         this.player = player;
         this.playerUuid = playerUuid;
         this.carriedItem = carriedItem;
+        this.selectedSlot = selectedSlot;
         this.restored = restored;
     }
 
     public static void rewindClientPlayerData(ClientPlayerData clientPlayerData) {
         if (clientPlayerData.restored) return;
         PlayerEntity player = clientPlayerData.player;
-        System.out.println(player.level.isClientSide());
-        player.inventory.setCarried(clientPlayerData.carriedItem);
+
+        InventorySaver.loadSelectedSlot(player, clientPlayerData.selectedSlot);
+        InventorySaver.loadCarriedItem(player, clientPlayerData.carriedItem);
+
         clientPlayerData.restored = true;
     }
 
     public static ClientPlayerData saveClientPlayerData(PlayerEntity entity) {
-//         System.out.println(InventorySaver.saveCarriedItem(entity));
         return new ClientPlayerData(
             entity,
             entity.getUUID(),
-            InventorySaver.saveCarriedItem(entity), 
+            InventorySaver.saveCarriedItem(entity),
+            InventorySaver.saveSelectedSlot(entity),
             false
         );
     }

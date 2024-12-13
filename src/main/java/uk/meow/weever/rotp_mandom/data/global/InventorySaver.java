@@ -42,7 +42,9 @@ public class InventorySaver {
     public static void loadCarriedItem(PlayerEntity player, ItemStack itemStack) {
         if (player == null) return;
 
-        player.inventory.setCarried(itemStack);
+        if (player.level.isClientSide()) {
+            player.inventory.setCarried(itemStack);
+        }
     }
 
     public static int saveSelectedSlot(PlayerEntity player) {
@@ -54,7 +56,9 @@ public class InventorySaver {
         if (player == null) return;
 
         player.inventory.selected = slot;
-        AddonPackets.sendToClient(new RWSetSelectedSlot(player.getId(), slot), player);
+        if (!player.level.isClientSide()) {
+            AddonPackets.sendToClient(new RWSetSelectedSlot(player.getId(), slot), player);
+        }
     }
 
     public static Map<Integer, ItemStack> savePlayerEnderChestInventory(PlayerEntity player) {

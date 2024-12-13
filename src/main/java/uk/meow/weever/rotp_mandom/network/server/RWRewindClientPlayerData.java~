@@ -38,10 +38,9 @@ public class RWRewindClientPlayerData {
         public void handle(RWRewindClientPlayerData msg, Supplier<NetworkEvent.Context> ctx) {
             Entity entity = ClientUtil.getEntityById(msg.entityId);
             if (entity instanceof PlayerEntity) {
-                LinkedList<ClientPlayerData> data = CapabilityUtil.getClientPlayerData((PlayerEntity) entity);
-                if (data != null && !data.isEmpty() && data.getFirst() != null) {
-                    ClientPlayerData.rewindClientPlayerData(data.getFirst());
-                }
+                LinkedList<ClientPlayerData> data = CapabilityUtil.getClientPlayerData((PlayerEntity) entity)
+                if (CapabilityUtil.getClientPlayerData((PlayerEntity) entity) != null && )
+                ClientPlayerData.rewindClientPlayerData(clientPlayerData);
             } // execute in minecraft:the_nether run tp @s -103.25149528553007 88.0 47.923395586463656 72.75982 28.834167
         }
 

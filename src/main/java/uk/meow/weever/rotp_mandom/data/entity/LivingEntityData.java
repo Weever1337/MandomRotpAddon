@@ -3,21 +3,27 @@ package uk.meow.weever.rotp_mandom.data.entity;
 import com.github.standobyte.jojo.power.impl.nonstand.INonStandPower;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.MCUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.ITeleporter;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.global.*;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.TrResetDeathTimePacket;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class LivingEntityData {
     public LivingEntity entity;
@@ -34,7 +40,6 @@ public class LivingEntityData {
     private final Map<Integer, ItemStack> armor;
     private final ItemStack offhand;
     private final Map<Integer, ItemStack> craftingGrid;
-    private final int selectedSlot;
     private final float absorptionAmount;
     private final float fallDistance;
     private final ExperienceData experienceData;
@@ -43,7 +48,7 @@ public class LivingEntityData {
     private final LivingEntity target;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, int airSupply, RegistryKey<World> dimension, Set<String> tags, List<EffectInstance> effects, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, ItemStack offhand, Map<Integer, ItemStack> craftingGrid, int selectedSlot, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, int airSupply, RegistryKey<World> dimension, Set<String> tags, List<EffectInstance> effects, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, ItemStack offhand, Map<Integer, ItemStack> craftingGrid, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
@@ -58,7 +63,6 @@ public class LivingEntityData {
         this.armor = armor;
         this.offhand = offhand; 
         this.craftingGrid = craftingGrid;
-        this.selectedSlot = selectedSlot;
         this.absorptionAmount = absorptionAmount;
         this.fallDistance = fallDistance;
         this.experienceData = experienceData;
@@ -69,7 +73,7 @@ public class LivingEntityData {
     }
 
     public void rewindLivingEntityData(LivingEntityData livingEntityData) {
-        if (livingEntityData.restored) return;
+        if (livingEntityData.restored || livingEntityData.entity.level.isClientSide()) return;
         LivingEntity entity = livingEntityData.entity;
         if (entity.deathTime > 0) {
             entity.deathTime = 0;
@@ -78,7 +82,11 @@ public class LivingEntityData {
 
         entity.fallDistance = livingEntityData.fallDistance;
         entity.setHealth(livingEntityData.health);
-        MCUtil.runCommand(entity, "execute in " + livingEntityData.dimension.location() + " run tp @s " + livingEntityData.position.x() + " " + livingEntityData.position.y() + " " + livingEntityData.position.z() + " " + livingEntityData.lookData.lookVecY + " " + livingEntityData.lookData.lookVecX);
+        String executeCommand = "tp @s " + livingEntityData.position.x() + " "
+                + livingEntityData.position.y() + " "
+                + livingEntityData.position.z() + " "
+                + livingEntityData.lookData.lookVecY + " " + livingEntityData.lookData.lookVecX;
+        MCUtil.runCommand(entity, executeCommand);
 
         entity.setAirSupply(livingEntityData.airSupply);
         entity.setRemainingFireTicks(livingEntityData.fireTicks);
@@ -91,8 +99,7 @@ public class LivingEntityData {
 
         for (EffectInstance savedEffect : livingEntityData.effects) {
             System.out.println(savedEffect.getEffect().getDisplayName().getString() + " | " + savedEffect.getAmplifier() + " | " + savedEffect.getDuration());
-            boolean added = entity.addEffect(savedEffect);
-            System.out.println(added);
+            entity.addEffect(savedEffect);
         }
 
         if (entity instanceof PlayerEntity) {
@@ -102,9 +109,7 @@ public class LivingEntityData {
             InventorySaver.loadPlayerInventory(player, livingEntityData.inventory);
             InventorySaver.loadPlayerChestInventory(player, livingEntityData.enderChest);
 
-            InventorySaver.loadSelectedSlot(player, livingEntityData.selectedSlot);
             InventorySaver.loadCraftingGrid(player, livingEntityData.craftingGrid);
-
             ExperienceData.loadExperienceData(player, livingEntityData.experienceData);
         }
 
@@ -152,7 +157,6 @@ public class LivingEntityData {
                 InventorySaver.saveArmor(entity),
                 InventorySaver.saveOffhand(entity),
                 InventorySaver.saveCraftingGrid(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
-                InventorySaver.saveSelectedSlot(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 entity instanceof PlayerEntity ? ((PlayerEntity) entity).getFoodData().getFoodLevel() : 0,
                 entity.fallDistance,
                 entity instanceof PlayerEntity ? new ExperienceData(((PlayerEntity) entity).experienceLevel, ExperienceData.getExperiencePoints((PlayerEntity) entity)) : null,

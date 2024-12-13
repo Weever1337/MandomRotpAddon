@@ -36,6 +36,7 @@ import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.RWRewindClientPlayerData;
+import uk.meow.weever.rotp_mandom.network.server.TrSetDataIsEmptyPacket;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -53,6 +54,7 @@ public class RewindSystem {
         if (!livingEntity.level.isClientSide()) {
             List<Entity> entities = entitiesAround(Entity.class, livingEntity.level, livingEntity.position(), range, AddonUtil::predicateForRewind);
             List<Entity> deadEntities = getAllDeadEntities(WorldUtilCapProvider.getWorldCap(livingEntity.level).getDeadEntities(), AddonUtil::predicateForRewind);
+            System.out.println(deadEntities.size() + " " + entities.size());
             entities.addAll(deadEntities);
 
             for (Entity entity : entities) {
@@ -93,7 +95,11 @@ public class RewindSystem {
         List<Entity> list = new ArrayList<>();
         for (List<Entity> linkEntities : linkedListWithDeadEntities) {
             if (filter != null) {
-                linkEntities.removeIf(entity -> !filter.test((T) entity));
+                linkEntities.removeIf(entity -> {
+                    boolean result = !filter.test((T) entity);
+                    System.out.println("Entity: " + entity + " -> Removed: " + result);
+                    return result;
+                });
             }
             list.addAll(linkEntities);
         }
@@ -174,7 +180,6 @@ public class RewindSystem {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSetBlock(SetBlockEvent event) {
         if (!event.getWorld().isClientSide()) {
-            System.out.println(event.getWorld());
             BlockState oldBlockState = event.getState();
             BlockState newBlockState = event.getNewState();
             BlockPos blockPos = event.getPos();
@@ -186,9 +191,7 @@ public class RewindSystem {
             else return;
 
             BlockData blockData = BlockData.saveBlockData(oldBlockState, blockPos, blockInfo, transferBlockData);
-            synchronized (TEMP_BLOCK_DATA) {
-                TEMP_BLOCK_DATA.add(blockData);
-            }
+            TEMP_BLOCK_DATA.add(blockData);
         }
     }
 
@@ -206,10 +209,8 @@ public class RewindSystem {
 
     private static void onRemoversEvents(Entity entity) {
         if (!entity.level.isClientSide() && !TEMP_ENTITY_DATA.contains(entity)) {
-//            System.out.println(entity.getName().getString());
-            synchronized (TEMP_ENTITY_DATA) {
-                TEMP_ENTITY_DATA.add(entity);
-            }
+            System.out.println(entity.getName().getString());
+            TEMP_ENTITY_DATA.add(entity);
         }
     }
 
@@ -228,23 +229,23 @@ public class RewindSystem {
                             entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).ifPresent(ItemEntityUtilCap::tick);
                         }
                     });
+                    if (event.world.getGameTime() % 20 == 0) {
+                        synchronized (TEMP_BLOCK_DATA) {
+                            onBlockSave(event.world, TEMP_BLOCK_DATA);
+                            TEMP_BLOCK_DATA.clear();
+                        }
+
+                        synchronized (TEMP_ENTITY_DATA) {
+                            int maxSeconds = RewindConfig.getSecond(event.world.isClientSide()); // FIXME Adding TEMP_ENTITY_DATA three times. Also without "synchronized" have a lot of lags, xd.
+                            event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+                                cap.addDeadEntities(TEMP_ENTITY_DATA, maxSeconds);
+                            });
+                            TEMP_ENTITY_DATA.clear();
+                        }
+                    }
                 case START:
                 default:
                     break;
-            }
-            if (event.world.getGameTime() % 20 == 0) {
-                synchronized (TEMP_BLOCK_DATA){
-                    onBlockSave(event.world, TEMP_BLOCK_DATA);
-                    TEMP_BLOCK_DATA.clear();
-                }
-
-                synchronized (TEMP_ENTITY_DATA){
-                    int maxSeconds = RewindConfig.getSecond(event.world.isClientSide());
-                    event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-                        cap.addDeadEntities(TEMP_ENTITY_DATA, maxSeconds);
-                    });
-                    TEMP_ENTITY_DATA.clear();
-                }
             }
         }
     }

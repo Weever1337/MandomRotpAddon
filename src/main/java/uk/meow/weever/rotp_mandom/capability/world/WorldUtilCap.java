@@ -70,6 +70,7 @@ public class WorldUtilCap {
         if (this.deadEntities.size() > maxSize) {
             this.deadEntities.removeFirst();
         }
+        System.out.println(tempEntityData.size() + " died");
         this.deadEntities.addLast(tempEntityData);
     }
 }

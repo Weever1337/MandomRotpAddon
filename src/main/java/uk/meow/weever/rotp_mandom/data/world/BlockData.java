@@ -64,7 +64,7 @@ public class BlockData {
         BlockState currentState = world.getBlockState(pos);
         BlockInfo blockInfo = data.blockInfo;
 
-        System.out.println(savedState.getBlock().getName().getString() + " | " + blockInfo.name());
+//        System.out.println(savedState.getBlock().getName().getString() + " | " + blockInfo.name());
 //        switch (blockInfo) {
 //            case BREAKED:
 //                rewindBlock(world, data);
@@ -81,9 +81,7 @@ public class BlockData {
 //            }
         switch (blockInfo) {
             case BREAKED:
-                if (!currentState.getBlock().equals(savedState.getBlock()) || !currentState.equals(savedState)) {
-                    rewindBlock(world, data);
-                }
+                rewindBlock(world, data);
                 break;
             case PLACED:
                 if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
