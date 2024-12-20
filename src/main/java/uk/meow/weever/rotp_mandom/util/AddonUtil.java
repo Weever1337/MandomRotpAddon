@@ -1,13 +1,18 @@
 package uk.meow.weever.rotp_mandom.util;
 
+import com.github.standobyte.jojo.capability.world.TimeStopHandler;
 import com.github.standobyte.jojo.client.standskin.StandSkinsManager;
+import com.github.standobyte.jojo.init.ModStatusEffects;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -17,13 +22,16 @@ import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class AddonUtil {
     private static final ResourceLocation MANDOM_SHADER = new ResourceLocation(MandomAddon.MOD_ID, "shaders/post/mandom.json");
-    
+
+    @Deprecated
     public static Vector3d convertFromBlockPos(BlockPos blockPos) { // what a hell
         return new Vector3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
     }
@@ -43,11 +51,24 @@ public class AddonUtil {
     }
 
     public static ResourceLocation getShader(IStandPower power) {
-        ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager.getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
-        return texture;
+        return StandSkinsManager.getInstance().getRemappedResPath(manager -> manager.getStandSkin(power.getStandInstance().get()), MANDOM_SHADER);
     }
 
     public static boolean predicateForRewind(Entity entity) {
         return (entity instanceof LivingEntity || entity instanceof ProjectileEntity || entity instanceof ItemEntity) && !(entity instanceof ArmorStandEntity);
+    }
+
+    private static long lastTickTime = 0;
+    public static boolean oneSecond() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastTickTime >= 1000) {
+            lastTickTime = currentTime;
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean canEntityMoveInStoppedTime(LivingEntity livingEntity, boolean checkEffect) {
+        return checkEffect && livingEntity.hasEffect(ModStatusEffects.TIME_STOP.get()) || livingEntity instanceof PlayerEntity && TimeStopHandler.canPlayerMoveInStoppedTime((PlayerEntity) livingEntity, checkEffect);
     }
 }

@@ -5,6 +5,7 @@ import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
+import uk.meow.weever.rotp_mandom.util.AddonUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class WorldUtilCap {
     private final World world;
     private final LinkedList<WorldData> worldData = new LinkedList<>();
     private final LinkedList<List<BlockData>> blockData = new LinkedList<>();
-    private LinkedList<List<Entity>> deadEntities = new LinkedList<>();
+    private final LinkedList<List<Entity>> deadEntities = new LinkedList<>();
 
     public WorldUtilCap(World world) {
         this.world = world;
@@ -24,7 +25,7 @@ public class WorldUtilCap {
         int maxSize = RewindConfig.getSecond(world.isClientSide());
 //        System.out.println(world.dimension().location());
 
-        if (world.getGameTime() % 20 == 0) {
+        if (AddonUtil.oneSecond()) {
             if (this.blockData.size() > maxSize) {
                 this.blockData.removeFirst();
             }
@@ -70,7 +71,6 @@ public class WorldUtilCap {
         if (this.deadEntities.size() > maxSize) {
             this.deadEntities.removeFirst();
         }
-        System.out.println(tempEntityData.size() + " died");
         this.deadEntities.addLast(tempEntityData);
     }
 }

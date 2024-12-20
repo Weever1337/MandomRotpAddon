@@ -5,6 +5,7 @@
   "refmap": "rotp_mandom.mixins.refmap.json",
   "minVersion": "0.8",
   "mixins": [
+    "EntityMixin",
     "WorldMixin"
   ]
 }

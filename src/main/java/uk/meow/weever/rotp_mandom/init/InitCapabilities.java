@@ -63,7 +63,7 @@ public class InitCapabilities {
     }
 
     public static void registerCapabilities() {
-        CapabilityManager.INSTANCE.register(ClientPlayerEntityUtilCap.class, JojoModUtil.noStorage(), () -> new ClientPlayerEntityUtilCap(null));
+        CapabilityManager.INSTANCE.register(ClientPlayerEntityUtilCap.class, new ClientPlayerEntityUtilCapStorage(), () -> new ClientPlayerEntityUtilCap(null));
         CapabilityManager.INSTANCE.register(LivingEntityUtilCap.class, new LivingEntityUtilCapStorage(), () -> new LivingEntityUtilCap(null));
         CapabilityManager.INSTANCE.register(ProjectileEntityUtilCap.class, new ProjectileEntityUtilCapStorage(), () -> new ProjectileEntityUtilCap(null));
         CapabilityManager.INSTANCE.register(ItemEntityUtilCap.class, new ItemEntityUtilCapStorage(), () -> new ItemEntityUtilCap(null));

@@ -1,15 +1,18 @@
 package uk.meow.weever.rotp_mandom.capability.entity;
 
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
+import uk.meow.weever.rotp_mandom.util.AddonUtil;
 
 import java.util.LinkedList;
 
 public class ClientPlayerEntityUtilCap {
     private final PlayerEntity playerEntity;
     private final LinkedList<ClientPlayerData> clientPlayerEntityData = new LinkedList<>();
+    private int capabilitySeconds = 0;
 
     public ClientPlayerEntityUtilCap(PlayerEntity playerEntity) {
         this.playerEntity = playerEntity;
@@ -17,11 +20,13 @@ public class ClientPlayerEntityUtilCap {
 
     public void tick() {
         if (playerEntity.tickCount % 20 == 0) {
+            capabilitySeconds++;
             int maxSize = RewindConfig.getSecond(playerEntity.level.isClientSide());
 
             if (this.clientPlayerEntityData.size() > maxSize) {
                 this.clientPlayerEntityData.removeFirst();
             }
+
             addClientPlayerData(ClientPlayerData.saveClientPlayerData(playerEntity), maxSize);
         }
     }
@@ -35,5 +40,19 @@ public class ClientPlayerEntityUtilCap {
             this.clientPlayerEntityData.removeFirst();
         }
         this.clientPlayerEntityData.addLast(cData);
+    }
+
+    public int getCapabilitySeconds() {
+        return capabilitySeconds;
+    }
+
+    public CompoundNBT toNBT() {
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putInt("capabilitySeconds", capabilitySeconds);
+        return nbt;
+    }
+
+    public void fromNBT(CompoundNBT nbt) {
+        capabilitySeconds = nbt.getInt("capabilitySeconds");
     }
 }

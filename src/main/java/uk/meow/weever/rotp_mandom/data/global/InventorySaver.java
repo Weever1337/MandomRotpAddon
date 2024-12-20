@@ -1,6 +1,7 @@
 package uk.meow.weever.rotp_mandom.data.global;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
@@ -111,6 +112,18 @@ public class InventorySaver {
                 armorInventory.set(slot, itemStack.copy());
             }
         }
+    }
+
+    public static ItemStack saveMainhand(LivingEntity livingEntity) {
+        if (!(livingEntity instanceof MobEntity)) return null;
+
+        return livingEntity.getMainHandItem();
+    }
+
+    public static void loadMainhand(LivingEntity livingEntity, ItemStack savedOffhand) {
+        if (!(livingEntity instanceof MobEntity)) return;
+
+        livingEntity.setItemInHand(Hand.MAIN_HAND, savedOffhand);
     }
 
     public static ItemStack saveOffhand(LivingEntity livingEntity) {

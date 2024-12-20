@@ -3,6 +3,7 @@ package uk.meow.weever.rotp_mandom.data.global;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.nbt.CompoundNBT;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 
 public class StandPowerData {
@@ -26,5 +27,17 @@ public class StandPowerData {
                 }
             }
         });
+    }
+
+    public CompoundNBT toNbt() {
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putString("StandType", this.stand.getType().toString());
+        nbt.putBoolean("Summoned", this.summoned);
+        return nbt;
+    }
+
+    public static StandPowerData fromNbt(CompoundNBT nbt, IStandPower stand) {
+        boolean summoned = nbt.getBoolean("Summoned");
+        return new StandPowerData(stand, summoned);
     }
 }

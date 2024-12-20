@@ -3,27 +3,27 @@ package uk.meow.weever.rotp_mandom.data.entity;
 import com.github.standobyte.jojo.power.impl.nonstand.INonStandPower;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.MCUtil;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.util.ITeleporter;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.global.*;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.TrResetDeathTimePacket;
+import uk.meow.weever.rotp_mandom.util.AddonUtil;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class LivingEntityData {
     public LivingEntity entity;
@@ -38,6 +38,7 @@ public class LivingEntityData {
     private final Map<Integer, ItemStack> inventory;
     private final Map<Integer, ItemStack> enderChest;
     private final Map<Integer, ItemStack> armor;
+    private final ItemStack mainhand;
     private final ItemStack offhand;
     private final Map<Integer, ItemStack> craftingGrid;
     private final float absorptionAmount;
@@ -48,7 +49,7 @@ public class LivingEntityData {
     private final LivingEntity target;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, int airSupply, RegistryKey<World> dimension, Set<String> tags, List<EffectInstance> effects, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, ItemStack offhand, Map<Integer, ItemStack> craftingGrid, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, int airSupply, RegistryKey<World> dimension, Set<String> tags, List<EffectInstance> effects, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, ItemStack mainhand, ItemStack offhand, Map<Integer, ItemStack> craftingGrid, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
@@ -61,6 +62,7 @@ public class LivingEntityData {
         this.inventory = inventory;
         this.enderChest = enderChest;
         this.armor = armor;
+        this.mainhand = mainhand;
         this.offhand = offhand; 
         this.craftingGrid = craftingGrid;
         this.absorptionAmount = absorptionAmount;
@@ -73,7 +75,10 @@ public class LivingEntityData {
     }
 
     public void rewindLivingEntityData(LivingEntityData livingEntityData) {
-        if (livingEntityData.restored || livingEntityData.entity.level.isClientSide()) return;
+        if (livingEntityData.restored || livingEntityData.entity.level.isClientSide()) {
+            System.out.println("returned " + livingEntityData.entity.getName().getString());
+            return;
+        }
         LivingEntity entity = livingEntityData.entity;
         if (entity.deathTime > 0) {
             entity.deathTime = 0;
@@ -82,7 +87,7 @@ public class LivingEntityData {
 
         entity.fallDistance = livingEntityData.fallDistance;
         entity.setHealth(livingEntityData.health);
-        String executeCommand = "tp @s " + livingEntityData.position.x() + " "
+        String executeCommand = "tp @s " + livingEntityData.position.x() + " " // TODO: fix dimensions
                 + livingEntityData.position.y() + " "
                 + livingEntityData.position.z() + " "
                 + livingEntityData.lookData.lookVecY + " " + livingEntityData.lookData.lookVecX;
@@ -114,6 +119,7 @@ public class LivingEntityData {
         }
 
         InventorySaver.loadArmor(entity, livingEntityData.armor);
+        InventorySaver.loadMainhand(entity, livingEntityData.mainhand);
         InventorySaver.loadOffhand(entity, livingEntityData.offhand);
 
         if (entity instanceof MobEntity && ((MobEntity) entity).getTarget() != livingEntityData.target) {
@@ -141,7 +147,7 @@ public class LivingEntityData {
         if (nonPower != null && RewindConfig.getSaveNonPowerStats(entity.level.isClientSide())) {
             nonPowerData = new NonPowerData(nonPower, nonPower.getEnergy());
         }
-        
+
         return new LivingEntityData(
                 entity,
                 entity.position(),
@@ -155,12 +161,13 @@ public class LivingEntityData {
                 InventorySaver.savePlayerInventory(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.savePlayerEnderChestInventory(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 InventorySaver.saveArmor(entity),
+                InventorySaver.saveMainhand(entity),
                 InventorySaver.saveOffhand(entity),
                 InventorySaver.saveCraftingGrid(entity instanceof PlayerEntity ? (PlayerEntity) entity : null),
                 entity instanceof PlayerEntity ? ((PlayerEntity) entity).getFoodData().getFoodLevel() : 0,
                 entity.fallDistance,
                 entity instanceof PlayerEntity ? new ExperienceData(((PlayerEntity) entity).experienceLevel, ExperienceData.getExperiencePoints((PlayerEntity) entity)) : null,
-                standPowerData, nonPowerData, 
+                standPowerData, nonPowerData,
                 (entity instanceof MobEntity ? ((MobEntity) entity).getTarget() : null), false);
     }
 
@@ -168,7 +175,6 @@ public class LivingEntityData {
         if (!(livingEntityData.entity instanceof MobEntity) || livingEntityData.restored) return;
     
         EntityType<?> entityType = livingEntityData.entity.getType();
-
         LivingEntity newEntity = (LivingEntity) entityType.create(level);
 
         if (newEntity == null) {

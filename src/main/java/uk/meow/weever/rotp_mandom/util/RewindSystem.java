@@ -1,5 +1,6 @@
 package uk.meow.weever.rotp_mandom.util;
 
+import com.github.standobyte.jojo.capability.world.TimeStopHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -36,7 +37,6 @@ import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.RWRewindClientPlayerData;
-import uk.meow.weever.rotp_mandom.network.server.TrSetDataIsEmptyPacket;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -52,16 +52,17 @@ public class RewindSystem {
 
     public static void rewindData(LivingEntity livingEntity, int range) {
         if (!livingEntity.level.isClientSide()) {
+            int maxSize = RewindConfig.getSecond(livingEntity.level.isClientSide());
+            LinkedList<List<Entity>> deadEntitiesFromCap = WorldUtilCapProvider.getWorldCap(livingEntity.level).getDeadEntities();
             List<Entity> entities = entitiesAround(Entity.class, livingEntity.level, livingEntity.position(), range, AddonUtil::predicateForRewind);
-            List<Entity> deadEntities = getAllDeadEntities(WorldUtilCapProvider.getWorldCap(livingEntity.level).getDeadEntities(), AddonUtil::predicateForRewind);
-            System.out.println(deadEntities.size() + " " + entities.size());
+            List<Entity> deadEntities = getAllDeadEntities(deadEntitiesFromCap, AddonUtil::predicateForRewind);
             entities.addAll(deadEntities);
 
             for (Entity entity : entities) {
                 if (entity instanceof LivingEntity) {
                     LinkedList<LivingEntityData> livingEntityData = CapabilityUtil.getLivingEntityData((LivingEntity) entity);
                     if (livingEntityData != null && !livingEntityData.isEmpty()) {
-                        rewindLivingEntityData(livingEntityData.getFirst());
+                        rewindLivingEntityData(livingEntityData.getFirst(), CapabilityUtil.getCapabilitySeconds(entity), maxSize);
                     }
 
                     if (entity instanceof PlayerEntity) {
@@ -70,12 +71,12 @@ public class RewindSystem {
                 } else if (entity instanceof ProjectileEntity) {
                     LinkedList<ProjectileData> projectileData = CapabilityUtil.getProjectileData((ProjectileEntity) entity);
                     if (projectileData != null && !projectileData.isEmpty()) {
-                        rewindProjectileData(projectileData.getFirst());
+                        rewindProjectileData(projectileData.getFirst(), CapabilityUtil.getCapabilitySeconds(entity), maxSize);
                     }
                 } else if (entity instanceof ItemEntity) {
                     LinkedList<ItemData> itemData = CapabilityUtil.getItemData((ItemEntity) entity);
                     if (itemData != null && !itemData.isEmpty()) {
-                        rewindItemData(itemData.getFirst());
+                        rewindItemData(itemData.getFirst(), CapabilityUtil.getCapabilitySeconds(entity), maxSize);
                     }
                 }
             }
@@ -94,6 +95,7 @@ public class RewindSystem {
     private static <T extends Entity> List<Entity> getAllDeadEntities(LinkedList<List<Entity>> linkedListWithDeadEntities, @Nullable Predicate<? super T> filter) {
         List<Entity> list = new ArrayList<>();
         for (List<Entity> linkEntities : linkedListWithDeadEntities) {
+            System.out.println(linkEntities);
             if (filter != null) {
                 linkEntities.removeIf(entity -> {
                     boolean result = !filter.test((T) entity);
@@ -106,16 +108,24 @@ public class RewindSystem {
         return list;
     }
 
-    private static void rewindLivingEntityData(LivingEntityData data) {
+    private static void rewindLivingEntityData(LivingEntityData data, int capabilitySeconds, int maxSize) {
+        if (capabilitySeconds < maxSize && !(data.entity instanceof PlayerEntity)) {
+            System.out.println(data.entity.getName().getString() + " | " + capabilitySeconds + " | " + maxSize);
+            data.entity.remove();
+            return;
+        }
         if (data.entity.isAlive()) {
             data.rewindLivingEntityData(data);
         } else {
-            System.out.println("Dead: " + data.entity.getName().getString());
             data.rewindDeadLivingEntityData(data, data.entity.level);
         }
     }
 
-    private static void rewindProjectileData(ProjectileData data) {
+    private static void rewindProjectileData(ProjectileData data, int capabilitySeconds, int maxSize) {
+        if (capabilitySeconds < maxSize) {
+            data.entity.remove();
+            return;
+        }
         if (data.entity.isAlive()) {
             data.rewindProjectileData(data);
         } else {
@@ -123,7 +133,11 @@ public class RewindSystem {
         }
     }
 
-    private static void rewindItemData(ItemData data) {
+    private static void rewindItemData(ItemData data, int capabilitySeconds, int maxSize) {
+        if (capabilitySeconds < maxSize) {
+            data.entity.remove();
+            return;
+        }
         if (data.entity.isAlive()) {
             data.rewindItemData(data);
         } else {
@@ -154,17 +168,20 @@ public class RewindSystem {
             itemStack = entity.getOffhandItem();
         }
 
-        if (itemStack.getItem() == InitItems.RINGO_CLOCK.get() && itemStack.getTag() != null) {
-            int cracked = itemStack.getTag().getInt("cracked");
-            if (cracked < RingoClock.MAX_CAN_BE_CRACKED()) {
-                if (damage) {
-                    itemStack.getTag().putInt("cracked", cracked + 1);
+        if (itemStack.getItem() == InitItems.RINGO_CLOCK.get()) {
+            if (itemStack.getTag() != null) {
+                int cracked = itemStack.getTag().getInt("cracked");
+                if (cracked < RingoClock.MAX_CAN_BE_CRACKED()) {
+                    if (damage) {
+                        itemStack.getTag().putInt("cracked", cracked + 1);
+                    }
+                    if (cracked >= RingoClock.MAX_CAN_BE_CRACKED()) {
+                        itemStack.shrink(1);
+                    }
+                    return true;
                 }
-                if (cracked >= RingoClock.MAX_CAN_BE_CRACKED()) {
-                    itemStack.shrink(1);
-                }
-                return true;
             }
+            return true;
         }    
         return false;
     }
@@ -191,7 +208,9 @@ public class RewindSystem {
             else return;
 
             BlockData blockData = BlockData.saveBlockData(oldBlockState, blockPos, blockInfo, transferBlockData);
-            TEMP_BLOCK_DATA.add(blockData);
+            synchronized (TEMP_BLOCK_DATA) {
+                TEMP_BLOCK_DATA.add(blockData);
+            }
         }
     }
 
@@ -209,43 +228,38 @@ public class RewindSystem {
 
     private static void onRemoversEvents(Entity entity) {
         if (!entity.level.isClientSide() && !TEMP_ENTITY_DATA.contains(entity)) {
-            System.out.println(entity.getName().getString());
-            TEMP_ENTITY_DATA.add(entity);
+            synchronized (TEMP_ENTITY_DATA) {
+                TEMP_ENTITY_DATA.add(entity);
+            }
         }
     }
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.side == LogicalSide.SERVER) {
-            switch (event.phase) {
-                case END:
-                    event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(WorldUtilCap::tick);
-                    ((ServerWorld) event.world).getAllEntities().forEach((entity) -> {
-                        if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity) && !((LivingEntity) entity).isDeadOrDying()){
-                            entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).ifPresent(LivingEntityUtilCap::tick);
-                        } else if (entity instanceof ProjectileEntity && entity.isAlive()) {
-                            entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).ifPresent(ProjectileEntityUtilCap::tick);
-                        } else if (entity instanceof ItemEntity && entity.isAlive()) {
-                            entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).ifPresent(ItemEntityUtilCap::tick);
-                        }
-                    });
-                    if (event.world.getGameTime() % 20 == 0) {
-                        synchronized (TEMP_BLOCK_DATA) {
-                            onBlockSave(event.world, TEMP_BLOCK_DATA);
-                            TEMP_BLOCK_DATA.clear();
-                        }
+            if (event.phase != TickEvent.Phase.START) {
+                return;
+            }
+            event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(WorldUtilCap::tick);
+            ((ServerWorld) event.world).getAllEntities().forEach((entity) -> {
+                if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity) && !((LivingEntity) entity).isDeadOrDying()) {
+                    entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).ifPresent(LivingEntityUtilCap::tick);
+                } else if (entity instanceof ProjectileEntity && entity.isAlive()) {
+                    entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).ifPresent(ProjectileEntityUtilCap::tick);
+                } else if (entity instanceof ItemEntity && entity.isAlive()) {
+                    entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).ifPresent(ItemEntityUtilCap::tick);
+                }
+            });
+            if (AddonUtil.oneSecond()) {
+                synchronized (TEMP_BLOCK_DATA) {
+                    onBlockSave(event.world, TEMP_BLOCK_DATA);
+                    TEMP_BLOCK_DATA.clear();
+                }
 
-                        synchronized (TEMP_ENTITY_DATA) {
-                            int maxSeconds = RewindConfig.getSecond(event.world.isClientSide()); // FIXME Adding TEMP_ENTITY_DATA three times. Also without "synchronized" have a lot of lags, xd.
-                            event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-                                cap.addDeadEntities(TEMP_ENTITY_DATA, maxSeconds);
-                            });
-                            TEMP_ENTITY_DATA.clear();
-                        }
-                    }
-                case START:
-                default:
-                    break;
+                synchronized (TEMP_ENTITY_DATA) {
+                    onDeadEntitiesSave(event.world, TEMP_ENTITY_DATA);
+                    TEMP_ENTITY_DATA.clear();
+                }
             }
         }
     }
@@ -262,6 +276,12 @@ public class RewindSystem {
             players.forEach(player -> {
                 CapabilityUtil.addBlockData(player.level, getNearbyBlocks(player, blockDatas, range));
             });
+        }
+    }
+
+    private static void onDeadEntitiesSave(World level, List<Entity> deadEntities) {
+        if (!level.isClientSide()) {
+            CapabilityUtil.addDeadEntity(level, deadEntities);
         }
     }
 }

@@ -37,19 +37,24 @@ public class TimeRewind extends StandEntityAction {
         super(builder);
     }
 
-    @Override
-    public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {
-        super.checkConditions(user, power, target);
-        if (user.level.dimension() != World.OVERWORLD) {
-            return ActionConditionResult.NEGATIVE;
-        }
-        return ActionConditionResult.POSITIVE;
-    }
+//    @Override
+//    public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+//        super.checkConditions(user, power, target);
+//        if (user.level.dimension() != World.OVERWORLD) {
+//            return ActionConditionResult.NEGATIVE;
+//        }
+//        return ActionConditionResult.POSITIVE;
+//    }
 
     @Override
     public void onTaskSet(World world, StandEntity standEntity, IStandPower power, Phase phase, StandEntityTask task, int ticks) {
-        if (world.isClientSide() && MandomConfig.CLIENT.isShaderEnabled.get()) {
-            RewindShader.enableShader(AddonUtil.getShader(power), 10);
+        if (world.isClientSide()) {
+            if (MandomConfig.CLIENT.isShaderEnabled.get()) {
+                RewindShader.enableShader(AddonUtil.getShader(power), 10);
+            }
+            LivingEntity livingEntity = power.getUser();
+            world.playSound(null, livingEntity.blockPosition(), InitSounds.REWIND_START.get(), SoundCategory.NEUTRAL, 1, 1);
+            world.playSound(null, livingEntity.blockPosition(), InitSounds.REWIND.get(), SoundCategory.NEUTRAL, 1, 1);
         }
     }
 
@@ -57,7 +62,6 @@ public class TimeRewind extends StandEntityAction {
     public void standPerform(World world, StandEntity standEntity, IStandPower power, StandEntityTask task) {
         LivingEntity livingEntity = power.getUser();
         if (!world.isClientSide()) {
-            world.playSound(null, livingEntity.blockPosition(), InitSounds.REWIND.get(), SoundCategory.NEUTRAL, 1, 1);
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide()) * 16;
             RewindSystem.rewindData(livingEntity, RANGE);
             RewindSystem.getRingoClock(livingEntity, true);

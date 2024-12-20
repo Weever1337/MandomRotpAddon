@@ -1,5 +1,6 @@
 package uk.meow.weever.rotp_mandom.util;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -23,11 +24,20 @@ import java.util.List;
 
 public class CapabilityUtil {
     public static void addBlockData(World world, List<BlockData> blockData) {
-        if (blockData == null || blockData.isEmpty() || world == null) return;
+        if (blockData == null || world == null) return;
 
         world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
             int maxSeconds = RewindConfig.getSecond(world.isClientSide());
             cap.addBlockData(blockData, maxSeconds);
+        });
+    }
+
+    public static void addDeadEntity(World world, List<Entity> entityData) {
+        if (entityData == null || world == null) return;
+
+        world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
+            int maxSeconds = RewindConfig.getSecond(world.isClientSide());
+            cap.addDeadEntities(entityData, maxSeconds);
         });
     }
 
@@ -54,5 +64,16 @@ public class CapabilityUtil {
 
     public static LinkedList<List<BlockData>> getBlockData(World world) {
         return world.getCapability(WorldUtilCapProvider.CAPABILITY).map(WorldUtilCap::getBlockData).orElse(null);
+    }
+
+    public static int getCapabilitySeconds(Entity entity) {
+        if (entity instanceof LivingEntity) {
+            return entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).map(LivingEntityUtilCap::getCapabilitySeconds).orElse(0);
+        } else if (entity instanceof ProjectileEntity) {
+            return entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).map(ProjectileEntityUtilCap::getCapabilitySeconds).orElse(0);
+        } else if (entity instanceof ItemEntity) {
+            return entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).map(ItemEntityUtilCap::getCapabilitySeconds).orElse(0);
+        }
+        return 0;
     }
 }

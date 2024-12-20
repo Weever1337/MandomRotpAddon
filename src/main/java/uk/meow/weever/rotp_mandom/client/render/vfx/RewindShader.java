@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 @OnlyIn(Dist.CLIENT)
 public class RewindShader {
-    private static Minecraft mc = Minecraft.getInstance();
+    private static final Minecraft mc = Minecraft.getInstance();
     private static boolean isShaderLoaded = false;
     private static int ticks;
     private static int duration = -1;

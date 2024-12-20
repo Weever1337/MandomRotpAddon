@@ -1,11 +1,5 @@
 package uk.meow.weever.rotp_mandom;
 
-import uk.meow.weever.rotp_mandom.init.InitCapabilities;
-import uk.meow.weever.rotp_mandom.init.InitEntities;
-import uk.meow.weever.rotp_mandom.init.InitItems;
-import uk.meow.weever.rotp_mandom.init.InitSounds;
-import uk.meow.weever.rotp_mandom.init.InitStands;
-import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -14,6 +8,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.meow.weever.rotp_mandom.init.*;
+import uk.meow.weever.rotp_mandom.network.AddonPackets;
 
 @Mod(MandomAddon.MOD_ID)
 public class MandomAddon {
@@ -35,9 +31,5 @@ public class MandomAddon {
     private void onFMLCommonSetup(FMLCommonSetupEvent event) {
         InitCapabilities.registerCapabilities();
         AddonPackets.init();
-    }
-
-    public static Logger getLogger() {
-        return LOGGER;
     }
 }
