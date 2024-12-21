@@ -1,6 +1,5 @@
 package uk.meow.weever.rotp_mandom.util;
 
-import com.github.standobyte.jojo.capability.world.TimeStopHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -8,7 +7,10 @@ import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.math.BlockPos;
@@ -16,6 +18,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -29,6 +32,7 @@ import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.entity.ItemData;
 import uk.meow.weever.rotp_mandom.data.entity.LivingEntityData;
 import uk.meow.weever.rotp_mandom.data.entity.ProjectileData;
+import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
 import uk.meow.weever.rotp_mandom.event.custom.RemoveEntityEvent;
@@ -38,9 +42,7 @@ import uk.meow.weever.rotp_mandom.item.RingoClock;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.RWRewindClientPlayerData;
 
-import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Predicate;
 
 import static uk.meow.weever.rotp_mandom.util.AddonUtil.entitiesAround;
 import static uk.meow.weever.rotp_mandom.util.AddonUtil.getNearbyBlocks;
@@ -52,10 +54,10 @@ public class RewindSystem {
 
     public static void rewindData(LivingEntity livingEntity, int range) {
         if (!livingEntity.level.isClientSide()) {
-            int maxSize = RewindConfig.getSecond(livingEntity.level.isClientSide());
+            int maxSize = RewindConfig.getSecond();
             LinkedList<List<Entity>> deadEntitiesFromCap = WorldUtilCapProvider.getWorldCap(livingEntity.level).getDeadEntities();
             List<Entity> entities = entitiesAround(Entity.class, livingEntity.level, livingEntity.position(), range, AddonUtil::predicateForRewind);
-            List<Entity> deadEntities = getAllDeadEntities(deadEntitiesFromCap, AddonUtil::predicateForRewind);
+            List<Entity> deadEntities = AddonUtil.getAllDeadEntities(deadEntitiesFromCap, AddonUtil::predicateForRewind);
             entities.addAll(deadEntities);
 
             for (Entity entity : entities) {
@@ -90,22 +92,6 @@ public class RewindSystem {
                 WorldData.rewindWorldData(worldData.getFirst());
             }
         }
-    }
-
-    private static <T extends Entity> List<Entity> getAllDeadEntities(LinkedList<List<Entity>> linkedListWithDeadEntities, @Nullable Predicate<? super T> filter) {
-        List<Entity> list = new ArrayList<>();
-        for (List<Entity> linkEntities : linkedListWithDeadEntities) {
-            System.out.println(linkEntities);
-            if (filter != null) {
-                linkEntities.removeIf(entity -> {
-                    boolean result = !filter.test((T) entity);
-                    System.out.println("Entity: " + entity + " -> Removed: " + result);
-                    return result;
-                });
-            }
-            list.addAll(linkEntities);
-        }
-        return list;
     }
 
     private static void rewindLivingEntityData(LivingEntityData data, int capabilitySeconds, int maxSize) {
@@ -204,7 +190,7 @@ public class RewindSystem {
             BlockData.BlockInfo blockInfo;
 
             if (!oldBlockState.isAir() && newBlockState.isAir()) blockInfo = BlockData.BlockInfo.BREAKED;
-            else if (oldBlockState != newBlockState) blockInfo = BlockData.BlockInfo.PLACED;
+            else if (oldBlockState != newBlockState || !newBlockState.isAir() && oldBlockState.isAir()) blockInfo = BlockData.BlockInfo.PLACED;
             else return;
 
             BlockData blockData = BlockData.saveBlockData(oldBlockState, blockPos, blockInfo, transferBlockData);
@@ -214,11 +200,37 @@ public class RewindSystem {
         }
     }
 
-   @SubscribeEvent(priority = EventPriority.HIGH)
-   public static void onEntityRemove(RemoveEntityEvent event) {
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onPlayerInteractRightClick(PlayerInteractEvent.RightClickBlock event) {
+        World world = event.getWorld();
+        BlockPos pos = event.getPos();
+        PlayerEntity player = event.getPlayer();
+
+        if (player == null) {
+            return;
+        }
+
+        BlockState blockState = world.getBlockState(pos);
+        TileEntity tileEntity = world.getBlockEntity(pos);
+
+        CompoundNBT tileNbt = tileEntity != null ? tileEntity.serializeNBT() : null;
+        Map<Integer, ItemStack> inventory = tileEntity instanceof IInventory
+                ? BlockInventorySaver.saveBlockInventory(tileEntity)
+                : Collections.emptyMap();
+
+        BlockData blockData = BlockData.saveBlockData(blockState, pos, BlockData.BlockInfo.INTERACTED,
+                new BlockData.TransferBlockData(blockState, inventory, tileNbt));
+
+        synchronized (TEMP_BLOCK_DATA) {
+            TEMP_BLOCK_DATA.add(blockData);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onEntityRemove(RemoveEntityEvent event) {
         Entity entity = event.getEntity();
         onRemoversEvents(entity);
-   }
+    }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onEntityDie(LivingDeathEvent event) {
@@ -262,11 +274,6 @@ public class RewindSystem {
                 }
             }
         }
-    }
-
-    public enum CooldownSystem {
-        TIME,
-        OWN
     }
 
     private static void onBlockSave(World level, List<BlockData> blockDatas) {

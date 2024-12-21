@@ -17,6 +17,7 @@ import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.event.custom.SetBlockEvent;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,17 +37,12 @@ public abstract class WorldMixin {
             if (oldState == null) return;
             TileEntity tileEntity = world.getBlockEntity(pos);
 
-            CompoundNBT nbt = null;
-            Map<Integer, ItemStack> inventory = new HashMap<>();
+            CompoundNBT tileNbt = tileEntity != null ? tileEntity.serializeNBT() : null;
+            Map<Integer, ItemStack> inventory = tileEntity instanceof IInventory
+                    ? BlockInventorySaver.saveBlockInventory(tileEntity)
+                    : Collections.emptyMap();
 
-            if (tileEntity != null) {
-                if (tileEntity instanceof IInventory) {
-                    inventory = BlockInventorySaver.saveBlockInventory(tileEntity);
-                }
-                nbt = tileEntity.serializeNBT();
-            }
-
-            BlockData.TransferBlockData transferBlockData = new BlockData.TransferBlockData(oldState, inventory, nbt);
+            BlockData.TransferBlockData transferBlockData = new BlockData.TransferBlockData(oldState, inventory, tileNbt);
             mandomRotpAddon$handledPositions.put(pos, transferBlockData);
         }
     }

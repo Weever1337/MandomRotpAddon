@@ -49,7 +49,7 @@ public class TimeRewind extends StandEntityAction {
     @Override
     public void onTaskSet(World world, StandEntity standEntity, IStandPower power, Phase phase, StandEntityTask task, int ticks) {
         if (world.isClientSide()) {
-            if (MandomConfig.CLIENT.isShaderEnabled.get()) {
+            if (RewindConfig.isShaderEnabled()) {
                 RewindShader.enableShader(AddonUtil.getShader(power), 10);
             }
             LivingEntity livingEntity = power.getUser();
@@ -65,13 +65,7 @@ public class TimeRewind extends StandEntityAction {
             int RANGE = GlobalConfig.getTimeRewindChunks(world.isClientSide()) * 16;
             RewindSystem.rewindData(livingEntity, RANGE);
             RewindSystem.getRingoClock(livingEntity, true);
-            if (RewindConfig.getCooldownForRewind(world.isClientSide())) {
-                if (RewindConfig.getCooldownSystem(world.isClientSide()) == RewindSystem.CooldownSystem.OWN) {
-                    power.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getCooldownOwnTime(world.isClientSide()) * 20);
-                } else {
-                    power.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getSecond(world.isClientSide()) * 20);
-                }
-            }
+            power.setCooldownTimer(InitStands.TIME_REWIND.get(), RewindConfig.getSecond() * 20);
         }
     }
 

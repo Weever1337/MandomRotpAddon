@@ -15,6 +15,7 @@ public class WorldUtilCap {
     private final LinkedList<WorldData> worldData = new LinkedList<>();
     private final LinkedList<List<BlockData>> blockData = new LinkedList<>();
     private final LinkedList<List<Entity>> deadEntities = new LinkedList<>();
+    private int ticks = 0;
 
     public WorldUtilCap(World world) {
         this.world = world;
@@ -22,21 +23,10 @@ public class WorldUtilCap {
 
     public void tick() {
         if (world == null || world.isClientSide()) return;
-        int maxSize = RewindConfig.getSecond(world.isClientSide());
-//        System.out.println(world.dimension().location());
+        ticks++;
+        int maxSize = RewindConfig.getSecond();
 
-        if (AddonUtil.oneSecond()) {
-            if (this.blockData.size() > maxSize) {
-                this.blockData.removeFirst();
-            }
-
-            if (this.worldData.size() > maxSize) {
-                this.worldData.removeFirst();
-            }
-
-            if (this.deadEntities.size() > maxSize) {
-                this.deadEntities.removeFirst();
-            }
+        if (ticks % 20 == 0) {
             addWorldData(WorldData.saveWorldData(world), maxSize);
         }
     }

@@ -64,22 +64,8 @@ public class BlockData {
         BlockState currentState = world.getBlockState(pos);
         BlockInfo blockInfo = data.blockInfo;
 
-//        System.out.println(savedState.getBlock().getName().getString() + " | " + blockInfo.name());
-//        switch (blockInfo) {
-//            case BREAKED:
-//                rewindBlock(world, data);
-//                break;
-//            case PLACED:
-//                if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
-//                    world.setBlock(pos, Fluids.EMPTY.defaultFluidState().createLegacyBlock(), 3);
-//                } else {
-//                    world.removeBlock(pos, false);
-//                }
-//                break;
-//            default:
-//                break;
-//            }
         switch (blockInfo) {
+            case INTERACTED:
             case BREAKED:
                 rewindBlock(world, data);
                 break;
@@ -119,7 +105,8 @@ public class BlockData {
 
     public enum BlockInfo {
         BREAKED,
-        PLACED
+        PLACED,
+        INTERACTED
     }
 
     public static class TransferBlockData {

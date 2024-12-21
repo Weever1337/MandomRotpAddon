@@ -12,7 +12,6 @@ import java.util.LinkedList;
 public class ClientPlayerEntityUtilCap {
     private final PlayerEntity playerEntity;
     private final LinkedList<ClientPlayerData> clientPlayerEntityData = new LinkedList<>();
-    private int capabilitySeconds = 0;
 
     public ClientPlayerEntityUtilCap(PlayerEntity playerEntity) {
         this.playerEntity = playerEntity;
@@ -20,8 +19,7 @@ public class ClientPlayerEntityUtilCap {
 
     public void tick() {
         if (playerEntity.tickCount % 20 == 0) {
-            capabilitySeconds++;
-            int maxSize = RewindConfig.getSecond(playerEntity.level.isClientSide());
+            int maxSize = RewindConfig.getSecond();
 
             if (this.clientPlayerEntityData.size() > maxSize) {
                 this.clientPlayerEntityData.removeFirst();
@@ -40,19 +38,5 @@ public class ClientPlayerEntityUtilCap {
             this.clientPlayerEntityData.removeFirst();
         }
         this.clientPlayerEntityData.addLast(cData);
-    }
-
-    public int getCapabilitySeconds() {
-        return capabilitySeconds;
-    }
-
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putInt("capabilitySeconds", capabilitySeconds);
-        return nbt;
-    }
-
-    public void fromNBT(CompoundNBT nbt) {
-        capabilitySeconds = nbt.getInt("capabilitySeconds");
     }
 }

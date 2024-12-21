@@ -12,20 +12,15 @@ import java.util.LinkedList;
 public class LivingEntityUtilCap {
     private final LivingEntity livingEntity;
     private LinkedList<LivingEntityData> livingEntityData = new LinkedList<>();
-    private int capabilitySeconds = 0;
 
     public LivingEntityUtilCap(LivingEntity livingEntity) {
         this.livingEntity = livingEntity;
     }
 
     public void tick() {
-        int maxSize = RewindConfig.getSecond(livingEntity.level.isClientSide());
+        int maxSize = RewindConfig.getSecond();
 
         if (livingEntity.tickCount % 20 == 0) {
-            capabilitySeconds++;
-            if (this.livingEntityData.size() > maxSize) {
-                this.livingEntityData.removeFirst();
-            }
             if (!TimeStopHandler.isTimeStopped(livingEntity.level, livingEntity.blockPosition())) {
                 addLivingEntityData(LivingEntityData.saveLivingEntityData(livingEntity), maxSize);
             }
@@ -45,20 +40,5 @@ public class LivingEntityUtilCap {
 
     public void onClone(LivingEntityUtilCap oldCap){
         this.livingEntityData = oldCap.livingEntityData;
-        this.capabilitySeconds = oldCap.capabilitySeconds;
-    }
-
-    public int getCapabilitySeconds() {
-        return capabilitySeconds;
-    }
-
-    public CompoundNBT toNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putInt("capabilitySeconds", capabilitySeconds);
-        return nbt;
-    }
-
-    public void fromNBT(CompoundNBT nbt) {
-        capabilitySeconds = nbt.getInt("capabilitySeconds");
     }
 }

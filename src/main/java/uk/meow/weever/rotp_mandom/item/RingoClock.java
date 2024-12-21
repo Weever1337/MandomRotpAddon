@@ -25,7 +25,7 @@ public class RingoClock extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        int SEC = RewindConfig.getSecond(false);
+        int SEC = RewindConfig.getSecond();
         tooltip.add(new TranslationTextComponent("tooltip.rotp_mandom.ringo_clock", SEC, SEC).withStyle(TextFormatting.RED));
         ClientUtil.addItemReferenceQuote(tooltip, this);
     }

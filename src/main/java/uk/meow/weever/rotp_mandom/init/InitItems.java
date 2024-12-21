@@ -13,5 +13,5 @@ public class InitItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MandomAddon.MOD_ID);
 
     public static final RegistryObject<RingoClock> RINGO_CLOCK = ITEMS.register("ringo_clock",
-            () -> new RingoClock(new Item.Properties().tab(ModItems.MAIN_TAB).stacksTo(1).rarity(Rarity.EPIC)));
+            () -> new RingoClock(new Item.Properties().tab(ModItems.MAIN_TAB).stacksTo(1).rarity(Rarity.COMMON)));
 }

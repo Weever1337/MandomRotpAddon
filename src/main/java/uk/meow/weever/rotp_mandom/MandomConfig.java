@@ -80,12 +80,7 @@ public class MandomConfig {
 
     public static class Common {
         public final ForgeConfigSpec.IntValue RewindInChunks;
-        //        public final ForgeConfigSpec.IntValue SaveInChunks;
         public final ForgeConfigSpec.IntValue MaxCastRingoClock;
-        public final ForgeConfigSpec.BooleanValue CooldownForRewind;
-        public final ForgeConfigSpec.EnumValue<RewindSystem.CooldownSystem> CooldownSystem;
-        public final ForgeConfigSpec.IntValue CooldownOwnTime;
-        public final ForgeConfigSpec.IntValue MaxCastSeconds;
         public final ForgeConfigSpec.BooleanValue SaveStandStats;
         public final ForgeConfigSpec.BooleanValue SaveNonPowerStats;
         public final ForgeConfigSpec.BooleanValue SummonStandEnabled;
@@ -101,12 +96,6 @@ public class MandomConfig {
             }
 
             builder.push("Global Settings");
-//            SaveInChunks = builder
-//                    .translation("rotp_mandom.config.point_chunks")
-//                    .comment("    Save all in * chunks.",
-//                            "    Defaults to 10."
-//                    )
-//                    .defineInRange("SaveInChunks", 10, 1, Integer.MAX_VALUE);
             RewindInChunks = builder
                     .translation("rotp_mandom.config.rewind_chunks")
                     .comment("    Rewind all in * chunks.",
@@ -120,43 +109,6 @@ public class MandomConfig {
                     .defineInRange("MaxCastRingoClock", 255, 1, Integer.MAX_VALUE);
             builder.pop();
             builder.push("Time Rewind Settings");
-            CooldownForRewind = builder
-                    .translation("rotp_mandom.config.cooldown_for_rewind")
-                    .comment("    Cooldown for Time Rewind ability.",
-                            "    Defaults to true.")
-                    .define("CooldownForRewind", true);
-            CooldownSystem = builder
-                    .translation("rotp_mandom.config.cooldown_system")
-                    .comment("    Cooldown system for Time Rewind ability.",
-                            "    Defaults to TIME. (OWN - own cooldown, TIME - MaxCastSeconds value)")
-                    .defineEnum("CooldownSystem", uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem.TIME);
-            CooldownOwnTime = builder
-                    .translation("rotp_mandom.config.cooldown_time")
-                    .comment("    Cooldown time for Time Rewind ability.",
-                            "    Defaults to 6. WORKS IF CooldownSystem is OWN.")
-                    .defineInRange("CooldownOwnTime", 6, 1, Integer.MAX_VALUE);
-            MaxCastSeconds = builder
-                    .translation("rotp_mandom.config.max_cast_seconds")
-                    .comment("    Maximum number of seconds up to remove data.",
-                            "    Defaults to 6 (in canon too).")
-                    .defineInRange("MaxCastSeconds", 6, 1, Integer.MAX_VALUE);
-//            SaveItems = builder
-//                    .translation("rotp_mandom.config.save_items")
-//                    .comment("    Save items (and inventory).",
-//                            "    Defaults to true.")
-//                    .define("SaveItems", true);
-//            SaveProjectiles = builder
-//                    .translation("rotp_mandom.config.save_projectiles")
-//                    .comment("    Save projectiles.",
-//                            "    Good with Save Items and Save Inventory setting",
-//                            "    Defaults to true.")
-//                    .define("SaveProjectiles", true);
-//            SaveEntities = builder
-//                    .translation("rotp_mandom.config.save_entities")
-//                    .comment("    Save entities.",
-//                            "    Just good.",
-//                            "    Defaults to true.")
-//                    .define("SaveEntities", true);
             SaveStandStats = builder
                     .translation("rotp_mandom.config.save_stand_stats")
                     .comment("    Save stand stats.",
@@ -172,17 +124,6 @@ public class MandomConfig {
                     .comment("    Allow summoning stand in rewind.",
                             "    Defaults to false.")
                     .define("SummonStandEnabled", false);
-//            SaveWorld = builder
-//                    .translation("rotp_mandom.config.save_world")
-//                    .comment("    Save world.",
-//                            "    Just good.",
-//                            "    Defaults to false.")
-//                    .define("SaveWorld", true);
-//            RewindDeadLivingEntities = builder
-//                    .translation("rotp_mandom.config.rewind_dead_living_entities")
-//                    .comment("    Rewind dead living entities in Time Rewind ability.",
-//                            "    Defaults to true.")
-//                    .define("RewindDeadLivingEntities", true);
             builder.pop();
 
             if (mainPath != null) {
@@ -200,73 +141,33 @@ public class MandomConfig {
 
         public static class SyncedValues {
             private final int RewindInChunks;
-            //            private final int SaveInChunks;
             private final int MaxCastRingoClock;
-            private final boolean CooldownForRewind;
-            private final uk.meow.weever.rotp_mandom.util.RewindSystem.CooldownSystem CooldownSystem;
-            private final int CooldownOwnTime;
-            private final int MaxCastSeconds;
-//            private final boolean SaveItems;
-//            private final boolean SaveProjectiles;
-//            private final boolean SaveEntities;
             private final boolean SaveStandStats;
             private final boolean SaveNonPowerStats;
             private final boolean SummonStandEnabled;
-//            private final boolean SaveWorld;
-//            private final boolean RewindDeadLivingEntities;
 
             public SyncedValues(PacketBuffer buf) {
                 RewindInChunks = buf.readVarInt();
-//                SaveInChunks = buf.readVarInt();
                 MaxCastRingoClock = buf.readVarInt();
-                CooldownForRewind = buf.readBoolean();
-                CooldownSystem = buf.readEnum(RewindSystem.CooldownSystem.class);
-                CooldownOwnTime = buf.readVarInt();
-                MaxCastSeconds = buf.readVarInt();
-//                SaveItems = buf.readBoolean();
-//                SaveProjectiles = buf.readBoolean();
-//                SaveEntities = buf.readBoolean();
                 SaveStandStats = buf.readBoolean();
                 SaveNonPowerStats = buf.readBoolean();
                 SummonStandEnabled = buf.readBoolean();
-//                SaveWorld = buf.readBoolean();
-//                RewindDeadLivingEntities = buf.readBoolean();
             }
 
             private SyncedValues(Common config) {
                 RewindInChunks = config.RewindInChunks.get();
-//                SaveInChunks = config.SaveInChunks.get();
                 MaxCastRingoClock = config.MaxCastRingoClock.get();
-                CooldownForRewind = config.CooldownForRewind.get();
-                CooldownSystem = config.CooldownSystem.get();
-                CooldownOwnTime = config.CooldownOwnTime.get();
-                MaxCastSeconds = config.MaxCastSeconds.get();
-//                SaveItems = config.SaveItems.get();
-//                SaveProjectiles = config.SaveProjectiles.get();
-//                SaveEntities = config.SaveEntities.get();
                 SaveStandStats = config.SaveStandStats.get();
                 SaveNonPowerStats = config.SaveNonPowerStats.get();
                 SummonStandEnabled = config.SummonStandEnabled.get();
-//                SaveWorld = config.SaveWorld.get();
-//                RewindDeadLivingEntities = config.RewindDeadLivingEntities.get();
             }
 
             public static void resetConfig() {
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.clearCache();
-//                COMMON_SYNCED_TO_CLIENT.SaveInChunks.clearCache();
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.clearCache();
-                COMMON_SYNCED_TO_CLIENT.CooldownForRewind.clearCache();
-                COMMON_SYNCED_TO_CLIENT.CooldownSystem.clearCache();
-                COMMON_SYNCED_TO_CLIENT.CooldownOwnTime.clearCache();
-                COMMON_SYNCED_TO_CLIENT.MaxCastSeconds.clearCache();
-//                COMMON_SYNCED_TO_CLIENT.SaveItems.clearCache();
-//                COMMON_SYNCED_TO_CLIENT.SaveProjectiles.clearCache();
-//                COMMON_SYNCED_TO_CLIENT.SaveEntities.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveStandStats.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveNonPowerStats.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SummonStandEnabled.clearCache();
-//                COMMON_SYNCED_TO_CLIENT.SaveWorld.clearCache();
-//                COMMON_SYNCED_TO_CLIENT.RewindDeadLivingEntities.clearCache();
             }
 
             public static void syncWithClient(ServerPlayerEntity player) {
@@ -279,38 +180,18 @@ public class MandomConfig {
 
             public void writeToBuf(PacketBuffer buf) {
                 buf.writeVarInt(RewindInChunks);
-//                buf.writeVarInt(SaveInChunks);
                 buf.writeVarInt(MaxCastRingoClock);
-                buf.writeBoolean(CooldownForRewind);
-                buf.writeEnum(CooldownSystem);
-                buf.writeVarInt(CooldownOwnTime);
-                buf.writeVarInt(MaxCastSeconds);
-//                buf.writeBoolean(SaveItems);
-//                buf.writeBoolean(SaveProjectiles);
-//                buf.writeBoolean(SaveEntities);
                 buf.writeBoolean(SaveStandStats);
                 buf.writeBoolean(SaveNonPowerStats);
                 buf.writeBoolean(SummonStandEnabled);
-//                buf.writeBoolean(SaveWorld);
-//                buf.writeBoolean(RewindDeadLivingEntities);
             }
 
             public void changeConfigValues() {
-//                COMMON_SYNCED_TO_CLIENT.SaveInChunks.set(SaveInChunks);
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.set(RewindInChunks);
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.set(MaxCastRingoClock);
-                COMMON_SYNCED_TO_CLIENT.CooldownForRewind.set(CooldownForRewind);
-                COMMON_SYNCED_TO_CLIENT.CooldownSystem.set(CooldownSystem);
-                COMMON_SYNCED_TO_CLIENT.CooldownOwnTime.set(CooldownOwnTime);
-                COMMON_SYNCED_TO_CLIENT.MaxCastSeconds.set(MaxCastSeconds);
-//                COMMON_SYNCED_TO_CLIENT.SaveItems.set(SaveItems);
-//                COMMON_SYNCED_TO_CLIENT.SaveProjectiles.set(SaveProjectiles);
-//                COMMON_SYNCED_TO_CLIENT.SaveEntities.set(SaveEntities);
                 COMMON_SYNCED_TO_CLIENT.SaveStandStats.set(SaveStandStats);
                 COMMON_SYNCED_TO_CLIENT.SaveNonPowerStats.set(SaveNonPowerStats);
                 COMMON_SYNCED_TO_CLIENT.SummonStandEnabled.set(SummonStandEnabled);
-//                COMMON_SYNCED_TO_CLIENT.SaveWorld.set(SaveWorld);
-//                COMMON_SYNCED_TO_CLIENT.RewindDeadLivingEntities.set(RewindDeadLivingEntities);
             }
         }
     }

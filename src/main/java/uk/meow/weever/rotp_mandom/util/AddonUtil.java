@@ -22,9 +22,7 @@ import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -70,5 +68,16 @@ public class AddonUtil {
 
     public static boolean canEntityMoveInStoppedTime(LivingEntity livingEntity, boolean checkEffect) {
         return checkEffect && livingEntity.hasEffect(ModStatusEffects.TIME_STOP.get()) || livingEntity instanceof PlayerEntity && TimeStopHandler.canPlayerMoveInStoppedTime((PlayerEntity) livingEntity, checkEffect);
+    }
+
+    public static <T extends Entity> List<Entity> getAllDeadEntities(LinkedList<List<Entity>> linkedListWithDeadEntities, @Nullable Predicate<? super T> filter) {
+        List<Entity> list = new ArrayList<>();
+        for (List<Entity> linkEntities : linkedListWithDeadEntities) {
+            if (filter != null) {
+                linkEntities.removeIf(entity -> !filter.test((T) entity));
+            }
+            list.addAll(linkEntities);
+        }
+        return list;
     }
 }

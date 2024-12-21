@@ -1,11 +1,12 @@
 package uk.meow.weever.rotp_mandom.config;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import uk.meow.weever.rotp_mandom.MandomConfig;
-import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
 public class RewindConfig {
-    public static int getSecond(boolean clientSide) {
-        return MandomConfig.getCommonConfigInstance(clientSide).MaxCastSeconds.get();
+    public static int getSecond() {
+        return 6;
     }
 
     public static boolean getSaveStandStats(boolean clientSide) {
@@ -16,19 +17,12 @@ public class RewindConfig {
         return MandomConfig.getCommonConfigInstance(clientSide).SaveNonPowerStats.get();
     }
 
-    public static boolean getCooldownForRewind(boolean clientSide) {
-        return MandomConfig.getCommonConfigInstance(clientSide).CooldownForRewind.get();
-    }
-
-    public static RewindSystem.CooldownSystem getCooldownSystem(boolean clientSide) {
-        return MandomConfig.getCommonConfigInstance(clientSide).CooldownSystem.get();
-    }
-
-    public static int getCooldownOwnTime(boolean clientSide) {
-        return MandomConfig.getCommonConfigInstance(clientSide).CooldownOwnTime.get();
-    }
-
     public static boolean summonStandEnabled(boolean clientSide) {
         return MandomConfig.getCommonConfigInstance(clientSide).SummonStandEnabled.get();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static boolean isShaderEnabled() {
+        return MandomConfig.CLIENT.isShaderEnabled.get();
     }
 }

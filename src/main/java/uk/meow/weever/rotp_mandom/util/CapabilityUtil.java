@@ -27,7 +27,7 @@ public class CapabilityUtil {
         if (blockData == null || world == null) return;
 
         world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            int maxSeconds = RewindConfig.getSecond(world.isClientSide());
+            int maxSeconds = RewindConfig.getSecond();
             cap.addBlockData(blockData, maxSeconds);
         });
     }
@@ -36,7 +36,7 @@ public class CapabilityUtil {
         if (entityData == null || world == null) return;
 
         world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(cap -> {
-            int maxSeconds = RewindConfig.getSecond(world.isClientSide());
+            int maxSeconds = RewindConfig.getSecond();
             cap.addDeadEntities(entityData, maxSeconds);
         });
     }
@@ -68,11 +68,11 @@ public class CapabilityUtil {
 
     public static int getCapabilitySeconds(Entity entity) {
         if (entity instanceof LivingEntity) {
-            return entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).map(LivingEntityUtilCap::getCapabilitySeconds).orElse(0);
+            return getLivingEntityData((LivingEntity) entity).size();
         } else if (entity instanceof ProjectileEntity) {
-            return entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).map(ProjectileEntityUtilCap::getCapabilitySeconds).orElse(0);
+            return getProjectileData((ProjectileEntity) entity).size();
         } else if (entity instanceof ItemEntity) {
-            return entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).map(ItemEntityUtilCap::getCapabilitySeconds).orElse(0);
+            return getItemData((ItemEntity) entity).size();
         }
         return 0;
     }
