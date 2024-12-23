@@ -1,7 +1,6 @@
 package uk.meow.weever.rotp_mandom.data.world;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -12,7 +11,8 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import uk.meow.weever.rotp_mandom.data.global.BlockInventorySaver;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BlockData {
     public BlockPos pos;
@@ -29,15 +29,6 @@ public class BlockData {
         this.nbt = nbt;
         this.properties = properties;
         this.blockInfo = blockInfo;
-    }
-
-    public static boolean inData(List<BlockData> blockDataQueue, BlockPos blockPos) {
-        for (BlockData data : blockDataQueue) {
-            if (data.pos.equals(blockPos)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static BlockData saveBlockData(BlockState blockState, BlockPos blockPos, BlockInfo blockInfo, TransferBlockData transferBlockData) {
@@ -60,8 +51,6 @@ public class BlockData {
 
     public static void rewindBlockData(World world, BlockData data) {
         BlockPos pos = data.pos;
-        BlockState savedState = data.blockState;
-        BlockState currentState = world.getBlockState(pos);
         BlockInfo blockInfo = data.blockInfo;
 
         switch (blockInfo) {
@@ -70,11 +59,7 @@ public class BlockData {
                 rewindBlock(world, data);
                 break;
             case PLACED:
-                if (currentState.getFluidState().getType() != savedState.getFluidState().getType()) {
-                    world.setBlock(pos, Fluids.EMPTY.defaultFluidState().createLegacyBlock(), 3);
-                } else {
-                    world.removeBlock(pos, false);
-                }
+                world.removeBlock(pos, false);
                 break;
             default:
                 break;

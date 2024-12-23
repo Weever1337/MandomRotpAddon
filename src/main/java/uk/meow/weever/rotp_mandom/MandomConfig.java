@@ -15,7 +15,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.CommonConfigPacket;
 import uk.meow.weever.rotp_mandom.network.server.ResetSyncedCommonConfigPacket;
-import uk.meow.weever.rotp_mandom.util.RewindSystem;
 
 import javax.annotation.Nullable;
 
@@ -81,6 +80,7 @@ public class MandomConfig {
     public static class Common {
         public final ForgeConfigSpec.IntValue RewindInChunks;
         public final ForgeConfigSpec.IntValue MaxCastRingoClock;
+        public final ForgeConfigSpec.BooleanValue RequireRingoClockToRewind;
         public final ForgeConfigSpec.BooleanValue SaveStandStats;
         public final ForgeConfigSpec.BooleanValue SaveNonPowerStats;
         public final ForgeConfigSpec.BooleanValue SummonStandEnabled;
@@ -109,6 +109,11 @@ public class MandomConfig {
                     .defineInRange("MaxCastRingoClock", 255, 1, Integer.MAX_VALUE);
             builder.pop();
             builder.push("Time Rewind Settings");
+            RequireRingoClockToRewind = builder
+                    .translation("rotp_mandom.config.require_ringo_clock_to_rewind")
+                    .comment("    Require Ringo Clock to use Time Rewind ability.",
+                            "    Defaults to true.")
+                    .define("RequireRingoClockToRewind", true);
             SaveStandStats = builder
                     .translation("rotp_mandom.config.save_stand_stats")
                     .comment("    Save stand stats.",
@@ -142,6 +147,7 @@ public class MandomConfig {
         public static class SyncedValues {
             private final int RewindInChunks;
             private final int MaxCastRingoClock;
+            private final boolean RequireRingoClockToRewind;
             private final boolean SaveStandStats;
             private final boolean SaveNonPowerStats;
             private final boolean SummonStandEnabled;
@@ -149,6 +155,7 @@ public class MandomConfig {
             public SyncedValues(PacketBuffer buf) {
                 RewindInChunks = buf.readVarInt();
                 MaxCastRingoClock = buf.readVarInt();
+                RequireRingoClockToRewind = buf.readBoolean();
                 SaveStandStats = buf.readBoolean();
                 SaveNonPowerStats = buf.readBoolean();
                 SummonStandEnabled = buf.readBoolean();
@@ -157,6 +164,7 @@ public class MandomConfig {
             private SyncedValues(Common config) {
                 RewindInChunks = config.RewindInChunks.get();
                 MaxCastRingoClock = config.MaxCastRingoClock.get();
+                RequireRingoClockToRewind = config.RequireRingoClockToRewind.get();
                 SaveStandStats = config.SaveStandStats.get();
                 SaveNonPowerStats = config.SaveNonPowerStats.get();
                 SummonStandEnabled = config.SummonStandEnabled.get();
@@ -165,6 +173,7 @@ public class MandomConfig {
             public static void resetConfig() {
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.clearCache();
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.clearCache();
+                COMMON_SYNCED_TO_CLIENT.RequireRingoClockToRewind.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveStandStats.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SaveNonPowerStats.clearCache();
                 COMMON_SYNCED_TO_CLIENT.SummonStandEnabled.clearCache();
@@ -181,6 +190,7 @@ public class MandomConfig {
             public void writeToBuf(PacketBuffer buf) {
                 buf.writeVarInt(RewindInChunks);
                 buf.writeVarInt(MaxCastRingoClock);
+                buf.writeBoolean(RequireRingoClockToRewind);
                 buf.writeBoolean(SaveStandStats);
                 buf.writeBoolean(SaveNonPowerStats);
                 buf.writeBoolean(SummonStandEnabled);
@@ -189,6 +199,7 @@ public class MandomConfig {
             public void changeConfigValues() {
                 COMMON_SYNCED_TO_CLIENT.RewindInChunks.set(RewindInChunks);
                 COMMON_SYNCED_TO_CLIENT.MaxCastRingoClock.set(MaxCastRingoClock);
+                COMMON_SYNCED_TO_CLIENT.RequireRingoClockToRewind.set(RequireRingoClockToRewind);
                 COMMON_SYNCED_TO_CLIENT.SaveStandStats.set(SaveStandStats);
                 COMMON_SYNCED_TO_CLIENT.SaveNonPowerStats.set(SaveNonPowerStats);
                 COMMON_SYNCED_TO_CLIENT.SummonStandEnabled.set(SummonStandEnabled);

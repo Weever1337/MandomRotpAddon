@@ -5,7 +5,6 @@ import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
-import uk.meow.weever.rotp_mandom.util.AddonUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +26,7 @@ public class WorldUtilCap {
         int maxSize = RewindConfig.getSecond();
 
         if (ticks % 20 == 0) {
+            ticks = 0;
             addWorldData(WorldData.saveWorldData(world), maxSize);
         }
     }

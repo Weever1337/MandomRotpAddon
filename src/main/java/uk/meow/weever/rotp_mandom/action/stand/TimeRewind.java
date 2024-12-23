@@ -13,7 +13,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
-import uk.meow.weever.rotp_mandom.MandomConfig;
 import uk.meow.weever.rotp_mandom.client.render.vfx.RewindShader;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
@@ -37,14 +36,14 @@ public class TimeRewind extends StandEntityAction {
         super(builder);
     }
 
-//    @Override
-//    public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {
-//        super.checkConditions(user, power, target);
-//        if (user.level.dimension() != World.OVERWORLD) {
-//            return ActionConditionResult.NEGATIVE;
-//        }
-//        return ActionConditionResult.POSITIVE;
-//    }
+    @Override
+    public ActionConditionResult checkConditions(LivingEntity user, IStandPower power, ActionTarget target) {
+        super.checkConditions(user, power, target);
+        if (RewindConfig.getRequiredRingoClockToRewind(user.level.isClientSide()) && !RewindSystem.getRingoClock(user)) {
+            return ActionConditionResult.NEGATIVE;
+        }
+        return ActionConditionResult.POSITIVE;
+    }
 
     @Override
     public void onTaskSet(World world, StandEntity standEntity, IStandPower power, Phase phase, StandEntityTask task, int ticks) {

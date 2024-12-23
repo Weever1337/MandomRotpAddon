@@ -180,6 +180,10 @@ public class RewindSystem {
         return getRingoClock(entity, false, handSide == HandSide.RIGHT ? Hand.MAIN_HAND : Hand.OFF_HAND);
     }
 
+    public static boolean getRingoClock(LivingEntity user) {
+        return getRingoClock(user, false, Hand.MAIN_HAND) || getRingoClock(user, false, Hand.OFF_HAND);
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSetBlock(SetBlockEvent event) {
         if (!event.getWorld().isClientSide()) {

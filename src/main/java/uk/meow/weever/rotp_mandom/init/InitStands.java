@@ -29,7 +29,7 @@ public class InitStands {
             new EntityStandRegistryObject<>("mandom",
                     STANDS,
                     () -> new EntityStandType.Builder<>()
-                            .color(0xff6994)
+                            .color(0xff6496)
                             .storyPartName(StoryPart.STEEL_BALL_RUN.getName())
                             .rightClickHotbar(TIME_REWIND.get())
                             .defaultStats(StandStats.class, new StandStats.Builder()

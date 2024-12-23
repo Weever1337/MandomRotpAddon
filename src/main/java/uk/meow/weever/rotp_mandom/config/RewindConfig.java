@@ -9,6 +9,10 @@ public class RewindConfig {
         return 6;
     }
 
+    public static boolean getRequiredRingoClockToRewind(boolean clientSide) {
+        return MandomConfig.getCommonConfigInstance(clientSide).RequireRingoClockToRewind.get();
+    }
+
     public static boolean getSaveStandStats(boolean clientSide) {
         return MandomConfig.getCommonConfigInstance(clientSide).SaveStandStats.get();
     }

@@ -7,7 +7,6 @@ import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
-import uk.meow.weever.rotp_mandom.network.server.RWSetCarriedItem;
 import uk.meow.weever.rotp_mandom.network.server.RWSetSelectedSlot;
 
 import java.util.*;
@@ -43,9 +42,7 @@ public class InventorySaver {
     public static void loadCarriedItem(PlayerEntity player, ItemStack itemStack) {
         if (player == null) return;
 
-        if (player.level.isClientSide()) {
-            player.inventory.setCarried(itemStack);
-        }
+        player.inventory.setCarried(itemStack);
     }
 
     public static int saveSelectedSlot(PlayerEntity player) {

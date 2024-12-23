@@ -75,7 +75,7 @@ public class LivingEntityData {
     }
 
     public void rewindLivingEntityData(LivingEntityData livingEntityData) {
-        if (livingEntityData.restored || livingEntityData.entity.level.isClientSide()) {
+        if (livingEntityData.restored || livingEntityData.entity.level.isClientSide() || !livingEntityData.entity.level.dimension().equals(livingEntityData.dimension)) {
             System.out.println("returned " + livingEntityData.entity.getName().getString());
             return;
         }

@@ -18,6 +18,8 @@ import net.minecraft.util.ResourceLocation;
 import uk.meow.weever.rotp_mandom.MandomAddon;
 import uk.meow.weever.rotp_mandom.init.InitStands;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class MandomLayerRenderer<T extends LivingEntity, M extends EntityModel<T>> extends LayerRenderer<T, M> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(MandomAddon.MOD_ID, "textures/entity/stand/mandom.png");
     private final MandomLayerModel<T> mandomArchive;
@@ -41,11 +43,21 @@ public class MandomLayerRenderer<T extends LivingEntity, M extends EntityModel<T
                 mandomArchive.copyPropertiesTo(entityModel);
                 mandomArchive.setupAnim(entity, limbSwing, limbSwingAmount, ticks, yRot, xRot);
 
-                ResourceLocation texture = StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
-                        .getStandSkin(stand.getStandInstance().get()), TEXTURE);
-                IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.entityTranslucent(texture), false, false);
+                IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.entityTranslucent(getTexture(entity)), false, false);
                 mandomArchive.renderToBuffer(matrixStack, vertexBuilder, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
             }
         });
+    }
+
+    private ResourceLocation getTexture(LivingEntity entity) {
+        AtomicReference<ResourceLocation> texture = new AtomicReference<>(TEXTURE);
+        IStandPower.getStandPowerOptional(entity).ifPresent((stand) -> {
+            StandType<?> mandom = InitStands.MANDOM.getStandType();
+            if (stand.getType() == mandom && stand.isActive()) {
+                texture.set(StandSkinsManager.getInstance().getRemappedResPath(manager -> manager
+                        .getStandSkin(stand.getStandInstance().get()), TEXTURE));
+            }
+        });
+        return texture.get();
     }
 }
