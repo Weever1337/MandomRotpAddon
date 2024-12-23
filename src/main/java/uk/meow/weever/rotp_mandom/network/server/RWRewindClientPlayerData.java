@@ -1,0 +1,52 @@
+package uk.meow.weever.rotp_mandom.network.server;
+
+import com.github.standobyte.jojo.client.ClientUtil;
+import com.github.standobyte.jojo.network.packets.IModPacketHandler;
+
+import java.util.LinkedList;
+import java.util.function.Supplier;
+
+import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
+import uk.meow.weever.rotp_mandom.data.entity.ClientPlayerData;
+import uk.meow.weever.rotp_mandom.util.CapabilityUtil;
+
+public class RWRewindClientPlayerData {
+    private final int entityId;
+
+    public RWRewindClientPlayerData(int entityId) {
+        this.entityId = entityId;
+    }
+
+    public static class Handler implements IModPacketHandler<RWRewindClientPlayerData> {
+
+        @Override
+        public void encode(RWRewindClientPlayerData msg, PacketBuffer buf) {
+            buf.writeInt(msg.entityId);
+        }
+
+        @Override
+        public RWRewindClientPlayerData decode(PacketBuffer buf) {
+            int entityId = buf.readInt();
+            return new RWRewindClientPlayerData(entityId);
+        }
+
+        @Override
+        public void handle(RWRewindClientPlayerData msg, Supplier<NetworkEvent.Context> ctx) {
+            Entity entity = ClientUtil.getEntityById(msg.entityId);
+            if (entity instanceof PlayerEntity) {
+                LinkedList<ClientPlayerData> data = CapabilityUtil.getClientPlayerData((PlayerEntity) entity);
+                if (data != null && !data.isEmpty() && data.getFirst() != null) {
+                    ClientPlayerData.rewindClientPlayerData(data.getFirst());
+                }
+            } // execute in minecraft:the_nether run tp @s -103.25149528553007 88.0 47.923395586463656 72.75982 28.834167
+        }
+
+        public Class<RWRewindClientPlayerData> getPacketClass() {
+            return RWRewindClientPlayerData.class;
+        }
+    }
+}

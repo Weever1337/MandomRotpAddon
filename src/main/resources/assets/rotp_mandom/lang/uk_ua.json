@@ -3,7 +3,6 @@
   "stand.rotp_mandom.mandom": "Mandom",
 
   "action.rotp_mandom.time_rewind": "Відмотка Часу",
-  "action.rotp_mandom.time_rewind.sec": "Відмотка Часу | Секунд: %s",
 
   "tooltip.rotp_mandom.ringo_clock": "Тільки %s секунд. Ні секундою більше, ні секундою менше. Рівно %s секунд.",
   "item.rotp_mandom.ringo_clock.reference_quote": "Світ справжніх чоловіків.",

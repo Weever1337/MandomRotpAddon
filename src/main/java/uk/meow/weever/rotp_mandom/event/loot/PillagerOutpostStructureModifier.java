@@ -25,7 +25,7 @@ public class PillagerOutpostStructureModifier extends LootModifier {
     @Nonnull
     @Override
     protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context) {
-        if (context.getRandom().nextFloat() > 0.5F) {
+        if (context.getRandom().nextFloat() > 0.7F) {
             generatedLoot.add(new ItemStack(addition, 1));
         }
         return generatedLoot;

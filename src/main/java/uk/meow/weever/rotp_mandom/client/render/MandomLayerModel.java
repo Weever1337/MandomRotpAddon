@@ -3,12 +3,11 @@ package uk.meow.weever.rotp_mandom.client.render;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.renderer.entity.model.BipedModel;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 
-public class MandomLayerModel<T extends LivingEntity, M extends BipedModel<T>> extends PlayerModel<T> {
+public class MandomLayerModel<T extends LivingEntity> extends BipedModel<T> {
     private final ModelRenderer Mandom;
     private final ModelRenderer m_head;
     private final ModelRenderer m_body;
@@ -109,8 +108,8 @@ public class MandomLayerModel<T extends LivingEntity, M extends BipedModel<T>> e
     private final ModelRenderer paw10;
 
 
-    public MandomLayerModel(float p_i46304_1_, boolean p_i46304_2_) {
-        super(p_i46304_1_, p_i46304_2_);
+    public MandomLayerModel(float p_i46304_1_) {
+        super(p_i46304_1_);
         texWidth = 128;
         texHeight = 128;
 

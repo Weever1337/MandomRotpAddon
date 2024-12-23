@@ -1,15 +1,15 @@
 package uk.meow.weever.rotp_mandom.data.global;
 
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.Hand;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
-import uk.meow.weever.rotp_mandom.network.server.RWSetCarriedItem;
 import uk.meow.weever.rotp_mandom.network.server.RWSetSelectedSlot;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class InventorySaver {
     public static Map<Integer, ItemStack> savePlayerInventory(PlayerEntity player) {
@@ -36,16 +36,13 @@ public class InventorySaver {
 
     public static ItemStack saveCarriedItem(PlayerEntity player) {
         if (player == null) return null;
-        // System.out.println(player.inventory.getCarried().getDisplayName().getString());
         return player.inventory.getCarried();
     }
 
     public static void loadCarriedItem(PlayerEntity player, ItemStack itemStack) {
         if (player == null) return;
-        // System.out.println(itemStack.getDisplayName().getString());
 
         player.inventory.setCarried(itemStack);
-        AddonPackets.sendToClient(new RWSetCarriedItem(player.getId(), itemStack), player);
     }
 
     public static int saveSelectedSlot(PlayerEntity player) {
@@ -57,7 +54,9 @@ public class InventorySaver {
         if (player == null) return;
 
         player.inventory.selected = slot;
-        AddonPackets.sendToClient(new RWSetSelectedSlot(player.getId(), slot), player);
+        if (!player.level.isClientSide()) {
+            AddonPackets.sendToClient(new RWSetSelectedSlot(player.getId(), slot), player);
+        }
     }
 
     public static Map<Integer, ItemStack> savePlayerEnderChestInventory(PlayerEntity player) {
@@ -82,11 +81,12 @@ public class InventorySaver {
         }
     }
 
-    public static Map<Integer, ItemStack> savePlayerArmor(PlayerEntity player) {
+    public static Map<Integer, ItemStack> saveArmor(LivingEntity livingEntity) {
         Map<Integer, ItemStack> armorMap = new HashMap<>();
-        if (player == null) return armorMap;
+        if (livingEntity == null) return armorMap;
+        Iterable<ItemStack> iterable = livingEntity.getArmorSlots();
 
-        NonNullList<ItemStack> armorInventory = player.inventory.armor;
+        List<ItemStack> armorInventory = new ArrayList<>((Collection<? extends ItemStack>) iterable);
         for (int i = 0; i < armorInventory.size(); i++) {
             ItemStack itemStack = armorInventory.get(i);
             if (!itemStack.isEmpty()) {
@@ -97,10 +97,11 @@ public class InventorySaver {
         return armorMap;
     }
 
-    public static void loadPlayerArmor(PlayerEntity player, Map<Integer, ItemStack> savedArmor) {
-        if (player == null) return;
+    public static void loadArmor(LivingEntity livingEntity, Map<Integer, ItemStack> savedArmor) {
+        if (livingEntity == null) return;
 
-        NonNullList<ItemStack> armorInventory = player.inventory.armor;
+        Iterable<ItemStack> iterable = livingEntity.getArmorSlots();
+        List<ItemStack> armorInventory = new ArrayList<>((Collection<? extends ItemStack>) iterable);
         for (Map.Entry<Integer, ItemStack> entry : savedArmor.entrySet()) {
             int slot = entry.getKey();
             ItemStack itemStack = entry.getValue();
@@ -110,33 +111,30 @@ public class InventorySaver {
         }
     }
 
-    public static Map<Integer, ItemStack> savePlayerOffhand(PlayerEntity player) {
-        Map<Integer, ItemStack> offhandMap = new HashMap<>();
-        if (player == null) return offhandMap;
+    public static ItemStack saveMainhand(LivingEntity livingEntity) {
+        if (!(livingEntity instanceof MobEntity)) return null;
 
-        NonNullList<ItemStack> offhandInventory = player.inventory.offhand;
-        for (int i = 0; i < offhandInventory.size(); i++) {
-            ItemStack itemStack = offhandInventory.get(i);
-            if (!itemStack.isEmpty()) {
-                offhandMap.put(i, itemStack.copy());
-            }
-        }
-
-        return offhandMap;
+        return livingEntity.getMainHandItem();
     }
 
-    public static void loadPlayerOffhand(PlayerEntity player, Map<Integer, ItemStack> savedOffhand) {
-        if (player == null) return;
+    public static void loadMainhand(LivingEntity livingEntity, ItemStack savedOffhand) {
+        if (!(livingEntity instanceof MobEntity)) return;
 
-        NonNullList<ItemStack> offhandInventory = player.inventory.offhand;
-        for (Map.Entry<Integer, ItemStack> entry : savedOffhand.entrySet()) {
-            int slot = entry.getKey();
-            ItemStack itemStack = entry.getValue();
-            if (slot < offhandInventory.size()) {
-                offhandInventory.set(slot, itemStack.copy());
-            }
-        }
+        livingEntity.setItemInHand(Hand.MAIN_HAND, savedOffhand);
     }
+
+    public static ItemStack saveOffhand(LivingEntity livingEntity) {
+        if (livingEntity == null) return null;
+
+        return livingEntity.getOffhandItem();
+    }
+
+    public static void loadOffhand(LivingEntity livingEntity, ItemStack savedOffhand) {
+        if (livingEntity == null) return;
+
+        livingEntity.setItemInHand(Hand.OFF_HAND, savedOffhand);
+    }
+
     public static Map<Integer, ItemStack> saveCraftingGrid(PlayerEntity player) {
         Map<Integer, ItemStack> craftingGridMap = new HashMap<>();
         if (player == null) return craftingGridMap;

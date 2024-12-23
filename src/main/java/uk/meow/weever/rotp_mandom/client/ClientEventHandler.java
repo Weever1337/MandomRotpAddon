@@ -18,8 +18,12 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import uk.meow.weever.rotp_mandom.capability.entity.ClientPlayerEntityUtilCap;
+import uk.meow.weever.rotp_mandom.capability.entity.ClientPlayerEntityUtilCapProvider;
+import uk.meow.weever.rotp_mandom.client.render.vfx.RewindShader;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 
 public class ClientEventHandler {
@@ -39,10 +43,9 @@ public class ClientEventHandler {
     }
 
     private boolean modPostedEvent = false;
-    @SuppressWarnings("resource")
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRenderHand(RenderHandEvent event) {
-        ClientPlayerEntity player = Minecraft.getInstance().player;
+        ClientPlayerEntity player = mc.player;
         if (!event.isCanceled() && !modPostedEvent && !(player.hasEffect(Effects.INVISIBILITY) || player.hasEffect(ModStatusEffects.FULL_INVISIBILITY.get()) || player.isInvisible())) {
             ItemStack stack = player.getItemInHand(event.getHand());
             if (event.getHand() == Hand.MAIN_HAND && !stack.isEmpty() && stack.getItem() instanceof RingoClock) {
@@ -81,5 +84,13 @@ public class ClientEventHandler {
             matrixStack.popPose();
         }
         modPostedEvent = false;
+    }
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event){
+        if (mc.player != null) {
+            mc.player.getCapability(ClientPlayerEntityUtilCapProvider.CAPABILITY).ifPresent(ClientPlayerEntityUtilCap::tick);
+            RewindShader.onShaderTick();
+        }
     }
 }

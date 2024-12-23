@@ -5,13 +5,6 @@ import com.github.standobyte.jojo.client.ui.standstats.StandStatsRenderer;
 import com.github.standobyte.jojo.client.ui.standstats.StandStatsRenderer.StandStat;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.power.impl.stand.stats.StandStats;
-
-import uk.meow.weever.rotp_mandom.MandomAddon;
-import uk.meow.weever.rotp_mandom.client.render.MandomLayerRenderer;
-import uk.meow.weever.rotp_mandom.client.render.MandomRenderer;
-import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerModel;
-import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerRenderer;
-import uk.meow.weever.rotp_mandom.init.InitStands;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingRenderer;
@@ -25,6 +18,12 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.jetbrains.annotations.NotNull;
+import uk.meow.weever.rotp_mandom.MandomAddon;
+import uk.meow.weever.rotp_mandom.client.render.MandomLayerRenderer;
+import uk.meow.weever.rotp_mandom.client.render.MandomRenderer;
+import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerModel;
+import uk.meow.weever.rotp_mandom.client.render.item.RingoLayerRenderer;
+import uk.meow.weever.rotp_mandom.init.InitStands;
 
 import java.util.Map;
 
@@ -36,11 +35,11 @@ public class ClientInit {
         Map<String, PlayerRenderer> skinMap = mc.getEntityRenderDispatcher().getSkinMap();
 
         RenderingRegistry.registerEntityRenderingHandler(
-                InitStands.STAND_MANDOM.getEntityType(), MandomRenderer::new
+                InitStands.MANDOM.getEntityType(), MandomRenderer::new
         );
 
         StandStatsRenderer.overrideCosmeticStats(
-            InitStands.STAND_MANDOM.getStandType().getRegistryName(), 
+                InitStands.MANDOM.getStandType().getRegistryName(),
             new StandStatsRenderer.ICosmeticStandStats() {
                 @Override public double statConvertedValue(StandStat stat, IStandPower standData, StandStats stats, float statLeveling) {
                     switch (stat) {
@@ -70,11 +69,13 @@ public class ClientInit {
         addBipedLayers(renderer);
     }
 
-    private static <T extends LivingEntity, M extends BipedModel<T>> void addLayersToEntities(EntityRenderer<?> renderer) {
+    private static <T extends LivingEntity, M extends EntityModel<T>> void addLayersToEntities(EntityRenderer<?> renderer) {
         if (renderer instanceof LivingRenderer<?, ?>) {
-            addLivingLayers((LivingRenderer<T, ?>) renderer);
-            if (((LivingRenderer<?, ?>) renderer).getModel() instanceof BipedModel<?>) {
-                addBipedLayers((LivingRenderer<T, M>) renderer);
+            LivingRenderer<T, M> livingRenderer = (LivingRenderer<T, M>) renderer;
+            livingRenderer.addLayer(new MandomLayerRenderer<>(livingRenderer));
+            addLivingLayers(livingRenderer);
+            if (livingRenderer.getModel() instanceof BipedModel<?>) {
+                addBipedLayers((LivingRenderer<T, BipedModel<T>>) livingRenderer);
             }
         }
     }
