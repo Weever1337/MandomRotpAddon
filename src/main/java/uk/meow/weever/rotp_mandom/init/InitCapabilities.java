@@ -1,7 +1,6 @@
 package uk.meow.weever.rotp_mandom.init;
 
 import com.github.standobyte.jojo.util.mod.JojoModUtil;
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
@@ -33,7 +32,7 @@ public class InitCapabilities {
         if (entity instanceof LivingEntity) {
             event.addCapability(LIVING_ENTITY_UTIL, new LivingEntityUtilCapProvider((LivingEntity) entity));
             if (entity instanceof PlayerEntity && entity.level.isClientSide()) {
-                event.addCapability(CLIENT_PLAYER_ENTITY_UTIL, new ClientPlayerEntityUtilCapProvider((AbstractClientPlayerEntity) entity));
+                event.addCapability(CLIENT_PLAYER_ENTITY_UTIL, new ClientPlayerEntityUtilCapProvider((PlayerEntity) entity));
             }
         } else if (entity instanceof ProjectileEntity) {
             event.addCapability(PROJECTILE_ENTITY_UTIL, new ProjectileEntityUtilCapProvider((ProjectileEntity) entity));
