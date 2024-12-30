@@ -10,13 +10,13 @@ import net.minecraft.world.World;
 import java.util.Set;
 
 public class ProjectileData {
+    public ProjectileEntity entity;
     private final Vector3d position;
     private final Set<String> tags;
     private final boolean noPhysics;
     private final LookData lookData;
     private final LivingEntity owner;
     private final Vector3d deltaMovement;
-    public ProjectileEntity entity;
     public boolean restored;
 
     public ProjectileData(ProjectileEntity entity, Vector3d position, Set<String> tags, boolean noPhysics, LookData lookData, LivingEntity owner, Vector3d deltaMovement, boolean restored) {

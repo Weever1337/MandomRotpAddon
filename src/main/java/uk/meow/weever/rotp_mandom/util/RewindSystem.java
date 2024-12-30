@@ -1,9 +1,19 @@
 package uk.meow.weever.rotp_mandom.util;
 
+import static uk.meow.weever.rotp_mandom.util.AddonUtil.entitiesAround;
+import static uk.meow.weever.rotp_mandom.util.AddonUtil.getNearbyBlocks;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -15,7 +25,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -24,7 +33,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import uk.meow.weever.rotp_mandom.MandomAddon;
-import uk.meow.weever.rotp_mandom.capability.entity.*;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCap;
 import uk.meow.weever.rotp_mandom.capability.world.WorldUtilCapProvider;
 import uk.meow.weever.rotp_mandom.config.GlobalConfig;
@@ -41,11 +49,6 @@ import uk.meow.weever.rotp_mandom.init.InitItems;
 import uk.meow.weever.rotp_mandom.item.RingoClock;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.RWRewindClientPlayerData;
-
-import java.util.*;
-
-import static uk.meow.weever.rotp_mandom.util.AddonUtil.entitiesAround;
-import static uk.meow.weever.rotp_mandom.util.AddonUtil.getNearbyBlocks;
 
 @Mod.EventBusSubscriber(modid = MandomAddon.MOD_ID)
 public class RewindSystem {
@@ -82,10 +85,10 @@ public class RewindSystem {
                     }
                 }
             }
-
             LinkedList<List<BlockData>> blockData = CapabilityUtil.getBlockData(livingEntity.level);
             if (blockData != null && !blockData.isEmpty()) {
                 restoreBlocks(blockData, livingEntity.level);
+                CapabilityUtil.removeBlockData(livingEntity.level);
             }
             LinkedList<WorldData> worldData = CapabilityUtil.getWorldData(livingEntity.level);
             if (worldData != null && !worldData.isEmpty()) {
@@ -101,9 +104,9 @@ public class RewindSystem {
             return;
         }
         if (data.entity.isAlive()) {
-            data.rewindLivingEntityData(data);
+            data.rewindLivingEntityData();
         } else {
-            data.rewindDeadLivingEntityData(data, data.entity.level);
+            data.rewindDeadLivingEntityData();
         }
     }
 
@@ -132,7 +135,7 @@ public class RewindSystem {
     }
 
     private static void restoreBlocks(LinkedList<List<BlockData>> blockDataList, World world) {
-        if (blockDataList == null || world == null) return;
+        if (blockDataList == null || world == null || blockDataList.isEmpty()) return;
         for (List<BlockData> list : blockDataList) {
             Set<BlockPos> processedBlocks = new HashSet<>();
             List<BlockData> toRestore = new ArrayList<>(list);
@@ -155,7 +158,7 @@ public class RewindSystem {
         }
 
         if (itemStack.getItem() == InitItems.RINGO_CLOCK.get()) {
-            if (itemStack.getTag() != null) {
+            if (itemStack.hasTag()) {
                 int cracked = itemStack.getTag().getInt("cracked");
                 if (cracked < RingoClock.MAX_CAN_BE_CRACKED()) {
                     if (damage) {
@@ -194,8 +197,8 @@ public class RewindSystem {
             BlockData.BlockInfo blockInfo;
 
             if (!oldBlockState.isAir() && newBlockState.isAir()) blockInfo = BlockData.BlockInfo.BREAKED;
-            else if (oldBlockState != newBlockState || !newBlockState.isAir() && oldBlockState.isAir()) blockInfo = BlockData.BlockInfo.PLACED;
-            else return;
+            else if (oldBlockState != newBlockState) blockInfo = BlockData.BlockInfo.PLACED;
+            else blockInfo = BlockData.BlockInfo.INTERACTED;
 
             BlockData blockData = BlockData.saveBlockData(oldBlockState, blockPos, blockInfo, transferBlockData);
             synchronized (TEMP_BLOCK_DATA) {
@@ -253,29 +256,15 @@ public class RewindSystem {
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.side == LogicalSide.SERVER) {
-            if (event.phase != TickEvent.Phase.START) {
-                return;
-            }
             event.world.getCapability(WorldUtilCapProvider.CAPABILITY).ifPresent(WorldUtilCap::tick);
-            ((ServerWorld) event.world).getAllEntities().forEach((entity) -> {
-                if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity) && !((LivingEntity) entity).isDeadOrDying()) {
-                    entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).ifPresent(LivingEntityUtilCap::tick);
-                } else if (entity instanceof ProjectileEntity && entity.isAlive()) {
-                    entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).ifPresent(ProjectileEntityUtilCap::tick);
-                } else if (entity instanceof ItemEntity && entity.isAlive()) {
-                    entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).ifPresent(ItemEntityUtilCap::tick);
-                }
-            });
-            if (AddonUtil.oneSecond()) {
-                synchronized (TEMP_BLOCK_DATA) {
-                    onBlockSave(event.world, TEMP_BLOCK_DATA);
-                    TEMP_BLOCK_DATA.clear();
-                }
+            synchronized (TEMP_BLOCK_DATA) {
+                onBlockSave(event.world, TEMP_BLOCK_DATA);
+                TEMP_BLOCK_DATA.clear();
+            }
 
-                synchronized (TEMP_ENTITY_DATA) {
-                    onDeadEntitiesSave(event.world, TEMP_ENTITY_DATA);
-                    TEMP_ENTITY_DATA.clear();
-                }
+            synchronized (TEMP_ENTITY_DATA) {
+                onDeadEntitiesSave(event.world, TEMP_ENTITY_DATA);
+                TEMP_ENTITY_DATA.clear();
             }
         }
     }

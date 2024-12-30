@@ -23,16 +23,4 @@ public class NonPowerData {
             }
         });
     }
-
-    public CompoundNBT toNbt() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putString("PowerType", this.power.getType().toString());
-        nbt.putFloat("Energy", this.energy);
-        return nbt;
-    }
-
-    public static NonPowerData fromNbt(CompoundNBT nbt, INonStandPower power) {
-        float energy = nbt.getFloat("Energy");
-        return new NonPowerData(power, energy);
-    }
 }

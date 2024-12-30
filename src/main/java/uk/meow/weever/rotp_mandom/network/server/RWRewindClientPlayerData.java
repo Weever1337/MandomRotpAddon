@@ -39,10 +39,10 @@ public class RWRewindClientPlayerData {
             Entity entity = ClientUtil.getEntityById(msg.entityId);
             if (entity instanceof PlayerEntity) {
                 LinkedList<ClientPlayerData> data = CapabilityUtil.getClientPlayerData((PlayerEntity) entity);
-                if (data != null && !data.isEmpty() && data.getFirst() != null) {
+                if (data != null && !data.isEmpty()) {
                     ClientPlayerData.rewindClientPlayerData(data.getFirst());
                 }
-            } // execute in minecraft:the_nether run tp @s -103.25149528553007 88.0 47.923395586463656 72.75982 28.834167
+            }
         }
 
         public Class<RWRewindClientPlayerData> getPacketClass() {

@@ -1,29 +1,34 @@
 package uk.meow.weever.rotp_mandom.data.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
+
 import com.github.standobyte.jojo.power.impl.nonstand.INonStandPower;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import com.github.standobyte.jojo.util.mc.MCUtil;
+
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
-import uk.meow.weever.rotp_mandom.data.global.*;
+import uk.meow.weever.rotp_mandom.data.global.ExperienceData;
+import uk.meow.weever.rotp_mandom.data.global.InventorySaver;
+import uk.meow.weever.rotp_mandom.data.global.LookData;
+import uk.meow.weever.rotp_mandom.data.global.NonPowerData;
+import uk.meow.weever.rotp_mandom.data.global.StandPowerData;
 import uk.meow.weever.rotp_mandom.network.AddonPackets;
 import uk.meow.weever.rotp_mandom.network.server.TrResetDeathTimePacket;
-import uk.meow.weever.rotp_mandom.util.AddonUtil;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class LivingEntityData {
     public LivingEntity entity;
@@ -38,18 +43,19 @@ public class LivingEntityData {
     private final Map<Integer, ItemStack> inventory;
     private final Map<Integer, ItemStack> enderChest;
     private final Map<Integer, ItemStack> armor;
-    private final ItemStack mainhand;
+    private final ItemStack mainHand;
     private final ItemStack offhand;
     private final Map<Integer, ItemStack> craftingGrid;
     private final float absorptionAmount;
     private final float fallDistance;
     private final ExperienceData experienceData;
-    private final StandPowerData standPowerData;
-    private final NonPowerData nonPowerData;
-    private final LivingEntity target;
+    @Nullable private final StandPowerData standPowerData;
+    @Nullable private final NonPowerData nonPowerData;
+    @Nullable private final LivingEntity target;
+    private final Entity vehicle;
     public boolean restored;
 
-    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, int airSupply, RegistryKey<World> dimension, Set<String> tags, List<EffectInstance> effects, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, ItemStack mainhand, ItemStack offhand, Map<Integer, ItemStack> craftingGrid, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, boolean restored) {
+    public LivingEntityData(LivingEntity entity, Vector3d position, float health, LookData lookData, int fireTicks, int airSupply, RegistryKey<World> dimension, Set<String> tags, List<EffectInstance> effects, Map<Integer, ItemStack> inventory, Map<Integer, ItemStack> enderChest, Map<Integer, ItemStack> armor, ItemStack mainHand, ItemStack offhand, Map<Integer, ItemStack> craftingGrid, float absorptionAmount, float fallDistance, ExperienceData experienceData, StandPowerData standPowerData, NonPowerData nonPowerData, LivingEntity target, Entity vehicle, boolean restored) {
         this.entity = entity;
         this.position = position;
         this.health = health;
@@ -62,7 +68,7 @@ public class LivingEntityData {
         this.inventory = inventory;
         this.enderChest = enderChest;
         this.armor = armor;
-        this.mainhand = mainhand;
+        this.mainHand = mainHand;
         this.offhand = offhand; 
         this.craftingGrid = craftingGrid;
         this.absorptionAmount = absorptionAmount;
@@ -71,66 +77,77 @@ public class LivingEntityData {
         this.standPowerData = standPowerData;
         this.nonPowerData = nonPowerData;
         this.target = target;
+		this.vehicle = vehicle;
         this.restored = restored;
     }
 
-    public void rewindLivingEntityData(LivingEntityData livingEntityData) {
-        if (livingEntityData.restored || livingEntityData.entity.level.isClientSide() || !livingEntityData.entity.level.dimension().equals(livingEntityData.dimension)) {
-            System.out.println("returned " + livingEntityData.entity.getName().getString());
+    public void rewindLivingEntityData() {
+        if (restored || entity.level.isClientSide() || !entity.level.dimension().equals(dimension)) {
+            System.out.println("returned " + entity.getName().getString());
             return;
         }
-        LivingEntity entity = livingEntityData.entity;
         if (entity.deathTime > 0) {
             entity.deathTime = 0;
             AddonPackets.sendToClientsTrackingAndSelf(new TrResetDeathTimePacket(entity.getId()), entity);
         }
 
-        entity.fallDistance = livingEntityData.fallDistance;
-        entity.setHealth(livingEntityData.health);
-        String executeCommand = "tp @s " + livingEntityData.position.x() + " " // TODO: fix dimensions
-                + livingEntityData.position.y() + " "
-                + livingEntityData.position.z() + " "
-                + livingEntityData.lookData.lookVecY + " " + livingEntityData.lookData.lookVecX;
+        entity.fallDistance = fallDistance;
+        entity.setHealth(health);
+        String executeCommand = "tp @s " + position.x() + " " // TODO: fix dimensions
+                + position.y() + " "
+                + position.z() + " "
+                + lookData.lookVecY + " " + lookData.lookVecX;
         MCUtil.runCommand(entity, executeCommand);
 
-        entity.setAirSupply(livingEntityData.airSupply);
-        entity.setRemainingFireTicks(livingEntityData.fireTicks);
+        entity.setAirSupply(airSupply);
+        entity.setRemainingFireTicks(fireTicks);
         entity.getTags().clear();
-        entity.getTags().addAll(livingEntityData.tags);
+        entity.getTags().addAll(tags);
 
-        for (EffectInstance effect : entity.getActiveEffects()) {
-            entity.removeEffect(effect.getEffect());
+        if (!entity.getActiveEffects().isEmpty()) {
+            List<EffectInstance> activeEffectsCopy = new ArrayList<>(entity.getActiveEffects());
+            for (EffectInstance effect : activeEffectsCopy) {
+                entity.removeEffect(effect.getEffect());
+            }
         }
 
-        for (EffectInstance savedEffect : livingEntityData.effects) {
-            System.out.println(savedEffect.getEffect().getDisplayName().getString() + " | " + savedEffect.getAmplifier() + " | " + savedEffect.getDuration());
-            entity.addEffect(savedEffect);
+        if (!effects.isEmpty()) {
+            for (EffectInstance savedEffect : effects) {
+                System.out.println(savedEffect.getEffect().getDisplayName().getString() + " | " + savedEffect.getAmplifier() + " | " + savedEffect.getDuration());
+                entity.addEffect(savedEffect);
+            }
         }
 
         if (entity instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) entity;
-            player.getFoodData().setFoodLevel((int) livingEntityData.absorptionAmount);
+            player.getFoodData().setFoodLevel((int) absorptionAmount);
 
-            InventorySaver.loadPlayerInventory(player, livingEntityData.inventory);
-            InventorySaver.loadPlayerChestInventory(player, livingEntityData.enderChest);
+            InventorySaver.loadPlayerInventory(player, inventory);
+            InventorySaver.loadPlayerChestInventory(player, enderChest);
 
-            InventorySaver.loadCraftingGrid(player, livingEntityData.craftingGrid);
-            ExperienceData.loadExperienceData(player, livingEntityData.experienceData);
+            InventorySaver.loadCraftingGrid(player, craftingGrid);
+            ExperienceData.loadExperienceData(player, experienceData);
         }
 
-        InventorySaver.loadArmor(entity, livingEntityData.armor);
-        InventorySaver.loadMainhand(entity, livingEntityData.mainhand);
-        InventorySaver.loadOffhand(entity, livingEntityData.offhand);
+        InventorySaver.loadArmor(entity, armor);
+        InventorySaver.loadMainhand(entity, mainHand);
+        InventorySaver.loadOffhand(entity, offhand);
 
-        if (entity instanceof MobEntity && ((MobEntity) entity).getTarget() != livingEntityData.target) {
-            MobEntity sigma = (MobEntity) entity;
-            sigma.setTarget(livingEntityData.target);
+        if (entity instanceof MobEntity && ((MobEntity) entity).getTarget() != target) {
+            MobEntity mobEntity = (MobEntity) entity;
+            mobEntity.setTarget(target);
+        }
+        
+        if (vehicle != null) {
+        	entity.startRiding(vehicle);
+        } else {
+        	entity.stopRiding();
         }
 
-        StandPowerData.loadData(entity, livingEntityData.standPowerData);
-        NonPowerData.loadData(entity, livingEntityData.nonPowerData);
+        StandPowerData.loadData(entity, standPowerData);
+        NonPowerData.loadData(entity, nonPowerData);
 
-        livingEntityData.restored = true;
+        restored = true;
     }
 
     public static LivingEntityData saveLivingEntityData(LivingEntity entity) {
@@ -168,21 +185,23 @@ public class LivingEntityData {
                 entity.fallDistance,
                 entity instanceof PlayerEntity ? new ExperienceData(((PlayerEntity) entity).experienceLevel, ExperienceData.getExperiencePoints((PlayerEntity) entity)) : null,
                 standPowerData, nonPowerData,
-                (entity instanceof MobEntity ? ((MobEntity) entity).getTarget() : null), false);
+                (entity instanceof MobEntity ? ((MobEntity) entity).getTarget() : null), 
+                entity.getVehicle(),
+                false);
     }
 
-    public void rewindDeadLivingEntityData(LivingEntityData livingEntityData, World level) {
-        if (!(livingEntityData.entity instanceof MobEntity) || livingEntityData.restored) return;
+    public void rewindDeadLivingEntityData() {
+        if (!(entity instanceof MobEntity) || restored) return;
     
-        EntityType<?> entityType = livingEntityData.entity.getType();
-        LivingEntity newEntity = (LivingEntity) entityType.create(level);
+        EntityType<?> entityType = entity.getType();
+        LivingEntity newEntity = (LivingEntity) entityType.create(entity.level);
 
         if (newEntity == null) {
             return;
         }
     
-        livingEntityData.entity = newEntity;
-        level.addFreshEntity(newEntity);
-        rewindLivingEntityData(livingEntityData);
+        entity = newEntity;
+        entity.level.addFreshEntity(newEntity);
+        rewindLivingEntityData();
     }
 }

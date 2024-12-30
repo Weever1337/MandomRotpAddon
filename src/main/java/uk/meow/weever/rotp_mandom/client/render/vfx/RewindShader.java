@@ -13,8 +13,7 @@ public class RewindShader {
     private static boolean isShaderLoaded = false;
     private static int ticks;
     private static int duration = -1;
-    @Nullable
-    private static ResourceLocation shaderTexture;
+    @Nullable private static ResourceLocation shaderTexture;
 
     public static void enableShader(ResourceLocation shaderTextureToRender, int durationInTicks) {
         shaderTexture = shaderTextureToRender;

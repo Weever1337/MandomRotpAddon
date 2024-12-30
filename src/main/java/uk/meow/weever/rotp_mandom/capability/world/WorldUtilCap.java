@@ -1,7 +1,13 @@
 package uk.meow.weever.rotp_mandom.capability.world;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import uk.meow.weever.rotp_mandom.capability.entity.*;
 import uk.meow.weever.rotp_mandom.config.RewindConfig;
 import uk.meow.weever.rotp_mandom.data.world.BlockData;
 import uk.meow.weever.rotp_mandom.data.world.WorldData;
@@ -29,6 +35,16 @@ public class WorldUtilCap {
             ticks = 0;
             addWorldData(WorldData.saveWorldData(world), maxSize);
         }
+
+        ((ServerWorld) world).getAllEntities().forEach((entity) -> {
+            if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity)) {
+                entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).ifPresent(LivingEntityUtilCap::tick);
+            } else if (entity instanceof ProjectileEntity && entity.isAlive()) {
+                entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).ifPresent(ProjectileEntityUtilCap::tick);
+            } else if (entity instanceof ItemEntity && entity.isAlive()) {
+                entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).ifPresent(ItemEntityUtilCap::tick);
+            }
+        });
     }
 
     public LinkedList<List<BlockData>> getBlockData() {
@@ -40,6 +56,10 @@ public class WorldUtilCap {
             this.blockData.removeFirst();
         }
         this.blockData.addLast(blockData);
+    }
+
+    public void clearBlockData() {
+        this.blockData.clear();
     }
 
     public LinkedList<WorldData> getWorldData() {

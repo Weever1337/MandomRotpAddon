@@ -28,16 +28,4 @@ public class StandPowerData {
             }
         });
     }
-
-    public CompoundNBT toNbt() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putString("StandType", this.stand.getType().toString());
-        nbt.putBoolean("Summoned", this.summoned);
-        return nbt;
-    }
-
-    public static StandPowerData fromNbt(CompoundNBT nbt, IStandPower stand) {
-        boolean summoned = nbt.getBoolean("Summoned");
-        return new StandPowerData(stand, summoned);
-    }
 }
