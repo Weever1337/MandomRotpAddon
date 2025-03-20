@@ -33,7 +33,7 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             mods {
-                mandom {
+                rotp_mandom {
                     source sourceSets.main
                 }
             }
@@ -47,7 +47,7 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
 
             mods {
-                mandom {
+                rotp_mandom {
                     source sourceSets.main
                 }
             }
@@ -59,10 +59,10 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
-            args '--mod', 'mandom', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', 'rotp_mandom', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                mandom {
+                rotp_mandom  {
                     source sourceSets.main
                 }
             }
@@ -77,12 +77,12 @@ repositories {
         name "RotP Maven"
         url 'https://raw.githubusercontent.com/StandoByte/RotP-maven/main'
     }
-     maven {
+     /*maven {
          url "https://www.cursemaven.com"
          content {
              includeGroup "curse.maven"
          }
-     }
+     }*/
 }
 
 dependencies {

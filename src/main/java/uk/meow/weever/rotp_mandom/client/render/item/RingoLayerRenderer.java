@@ -83,7 +83,7 @@ public class RingoLayerRenderer <T extends LivingEntity, M extends BipedModel<T>
             if (!isRingo || ringoClockStack.isEmpty()) {
                 return;
             }
-            PlayerModel<AbstractClientPlayerEntity> model = (PlayerModel<AbstractClientPlayerEntity>) ringoModel;
+            PlayerModel<AbstractClientPlayerEntity> model = playerRenderer.getModel();
             ResourceLocation texture = getTexture(player);
             ClientUtil.setupForFirstPersonRender(model, player);
             IVertexBuilder vertexBuilder = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(texture), false, false);

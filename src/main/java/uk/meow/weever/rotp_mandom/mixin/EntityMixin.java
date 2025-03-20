@@ -15,16 +15,4 @@ public class EntityMixin {
     public void remove(boolean keepData, CallbackInfo ci) {
         MinecraftForge.EVENT_BUS.post(new RemoveEntityEvent((Entity) (Object) this));
     }
-
-//    @Inject(method = "tick", at = @At("TAIL"))
-//    public void tick(CallbackInfo ci) {
-//        Entity entity = (Entity) (Object) this;
-//        if (entity instanceof LivingEntity && !(entity instanceof ArmorStandEntity) && !((LivingEntity) entity).isDeadOrDying()) {
-//            entity.getCapability(LivingEntityUtilCapProvider.CAPABILITY).ifPresent(LivingEntityUtilCap::tick);
-//        } else if (entity instanceof ProjectileEntity && entity.isAlive()) {
-//            entity.getCapability(ProjectileEntityUtilCapProvider.CAPABILITY).ifPresent(ProjectileEntityUtilCap::tick);
-//        } else if (entity instanceof ItemEntity && entity.isAlive()) {
-//            entity.getCapability(ItemEntityUtilCapProvider.CAPABILITY).ifPresent(ItemEntityUtilCap::tick);
-//        }
-//    }
 }
